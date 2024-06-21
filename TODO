@@ -1,0 +1,22 @@
+
+Reps:
+[ ] - Bitboard reps
+[ ] - Move reps? (https://www.chessprogramming.org/Encoding_Moves)
+[ ] - Game state
+
+
+Move Gen:
+[ ] - Pseudo-legal
+
+
+Search:
+[ ] - Alpha-Beta pruning
+[ ] - Transposition Table
+[ ] - Iterative Deepening
+[ ] - Aspiration Windows
+[ ] - Quescence Search
+[ ] - Ordering?
+
+
+Eval:
+[ ] - ?
