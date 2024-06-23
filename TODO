@@ -1,12 +1,13 @@
 
 Reps:
-[ ] - Bitboard reps
-[ ] - Move reps? (https://www.chessprogramming.org/Encoding_Moves)
-[ ] - Game state
+[ ] - Bitboard reps + Type array (64)
+[ ] - Move reps? (https://www.chessprogramming.org/Encoding_Moves); special flags: switch LSB (disjoint)
+[ ] - Game state: halfmove, ep (as bitboard), castling
 
 
 Move Gen:
 [ ] - Pseudo-legal
+[ ] - Bitboard shifts for sliding
 
 
 Search:
@@ -15,8 +16,13 @@ Search:
 [ ] - Iterative Deepening
 [ ] - Aspiration Windows
 [ ] - Quescence Search
-[ ] - Ordering?
+
+
+Ordering:
+[ ] - ?
 
 
 Eval:
 [ ] - ?
+
+
