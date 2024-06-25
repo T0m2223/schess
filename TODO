@@ -1,8 +1,10 @@
 
 Reps:
-[ ] - Bitboard reps + Type array (64)
-[ ] - Move reps? (https://www.chessprogramming.org/Encoding_Moves); special flags: switch LSB (disjoint)
-[ ] - Game state: halfmove, ep (as bitboard), castling
+[x] - Bitboard reps + Type array (64)
+[x] - Move reps? (https://www.chessprogramming.org/Encoding_Moves); special flags: switch LSB (disjoint)
+[x] - Move type: add CASTLE_PREVENTION_B/W move (regular rook move or regular king move); unset bits in irreversable state in move_make for CASTLE + CASTLE_PREVENTION
+[x] - Castle-prevention-promotion?
+[x] - Game state: halfmove, ep (as bitboard), castling
 
 
 Move Gen:
@@ -26,3 +28,6 @@ Eval:
 [ ] - ?
 
 
+
+TOTEST:
+[ ] - gen generated moves contain bitboards for to and from, move_make uses them instead of indices; remember: adjust EVERY literal in moves.c
