@@ -25,6 +25,7 @@ typedef struct
 enum MOVE_TYPE
 {
   MT_NORMAL,
+  MT_DOUBLE_PAWN,
   MT_EN_PASSANT,
   MT_CASTLE_KING,
   MT_CASTLE_QUEEN,
@@ -45,7 +46,8 @@ typedef struct
 typedef struct
 {
   unsigned halfmove_clock;
-  bitboard ep_state, castling_rights[2];
+  bitboard en_passant_castling_rights;
 } irreversable_state;
+
 
 #endif // SCHESS_TYPES_H

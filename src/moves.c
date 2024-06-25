@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include "types.h"
+#include "moves.h"
 
 static inline bitboard
 bitboard_set(bitboard b, size_t idx) { return b | (1 << idx); }
@@ -16,7 +16,6 @@ eval_piece_value(enum PIECE_TYPE type)
   return piece_values[type];
 };
 
-// TODO: set irreversable_state attributes
 int
 move_make(move *m, board_state *board, irreversable_state *meta)
 {
@@ -31,12 +30,19 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   bitboard_unset(board->bitboards[capture], m->to);
   board->types[m->from] = PT_NONE;
 
-  if (piece == PT_WP || piece == PT_BP || capture != PT_NONE) meta->halfmove_clock = 0;
+  if (capture != PT_NONE) meta->halfmove_clock = 0;
+  meta->en_passant_castling_rights &= 0xFF000000000000FF; // clear en passant potentials
+
   enum PIECE_TYPE promo_type, castle_rook;
 
   switch (m->type)
   {
   case MT_NORMAL:
+    if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
+    break;
+  case MT_DOUBLE_PAWN:
+    meta->en_passant_castling_rights |= (1 << m->to) & 0x0000FF0000FF0000;
+    meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:
     if (piece == PT_WP)
@@ -48,6 +54,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
       bitboard_unset(board->bitboards[PT_WP], m->to - 8);
       value += eval_piece_value(PT_WP);
     }
+    meta->halfmove_clock = 0;
     break;
 
   case MT_CASTLE_KING:
@@ -66,6 +73,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
       promo_type = piece + (rel_type - PR_P); \
       bitboard_set(board->bitboards[promo_type], m->to); \
       value += eval_piece_value(promo_type) - eval_piece_value(piece); \
+      meta->halfmove_clock = 0; \
       piece = promo_type; \
     }
   case MT_PROMOTION_KNIGHT: MOVE_MAKE_HANDLE_PROMOTION(PR_N); break;
@@ -73,6 +81,28 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   case MT_PROMOTION_ROOK: MOVE_MAKE_HANDLE_PROMOTION(PR_R); break;
   case MT_PROMOTION_QUEEN: MOVE_MAKE_HANDLE_PROMOTION(PR_Q); break;
 #undef MOVE_MAKE_HANDLE_PROMOTION
+  }
+
+
+  // unset castle rights if rook is taken
+  switch (m->to)
+  {
+  case 0x07: meta->en_passant_castling_rights &= 0xFF00FF0000FF000F; break;
+  case 0x00: meta->en_passant_castling_rights &= 0xFF00FF0000FF00F0; break;
+  case 0x3F: meta->en_passant_castling_rights &= 0x0F00FF0000FF00FF; break;
+  case 0x37: meta->en_passant_castling_rights &= 0xF000FF0000FF00FF; break;
+  default: break;
+  }
+
+  switch (m->from)
+  {
+  case 0x07: meta->en_passant_castling_rights &= 0xFF00FF0000FF000F; break; // white rook kingside moved
+  case 0x00: meta->en_passant_castling_rights &= 0xFF00FF0000FF00F0; break; // white rook queenside moved
+  case 0x3F: meta->en_passant_castling_rights &= 0x0F00FF0000FF00FF; break; // black rook kingside moved
+  case 0x37: meta->en_passant_castling_rights &= 0xF000FF0000FF00FF; break; // black rook queenside moved
+  case 0x04: meta->en_passant_castling_rights &= 0xFF00FF0000FF0000; break; // white king moved
+  case 0x3C: meta->en_passant_castling_rights &= 0x0000FF0000FF00FF; break; // black king moved
+  default: break;
   }
 
   // set board
@@ -84,7 +114,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
 
 
 int
-move_unmake(move *m, board_state *board, irreversable_state *meta)
+move_unmake(move *m, board_state *board)
 {
   int value;
   enum PIECE_TYPE piece = board->types[m->to],
@@ -101,6 +131,7 @@ move_unmake(move *m, board_state *board, irreversable_state *meta)
   switch (m->type)
   {
   case MT_NORMAL:
+  case MT_DOUBLE_PAWN:
     break;
   case MT_EN_PASSANT:
     if (piece == PT_WP)

@@ -11,7 +11,6 @@
 
 // stack for moves? (size: max ply)
 // inplace orderer?
-
 struct move_buffer *move_buffer_create(size_t max_ply)
 {
   size_t i;
