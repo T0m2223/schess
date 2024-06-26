@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include "moves.h"
+#include <move.h>
 
 static inline bitboard
 bitboard_set(bitboard b, size_t idx) { return b | (1 << idx); }
@@ -10,7 +10,7 @@ bitboard_unset(bitboard b, size_t idx) { return b & ~(1 << idx); }
 
 // TODO: move to eval.c
 int
-eval_piece_value(enum PIECE_TYPE type)
+eval_piece_value(piece_type type)
 {
   const int piece_values[13] = { 0, 1, 3, 3, 5, 9, 100, -1, -3, -3, -5, -9, -100 };
   return piece_values[type];
@@ -20,7 +20,7 @@ int
 move_make(move *m, board_state *board, irreversable_state *meta)
 {
   int value;
-  enum PIECE_TYPE piece = board->types[m->from],
+  piece_type piece = board->types[m->from],
   capture = board->types[m->to];
 
   value = eval_piece_value(capture);
@@ -33,7 +33,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   if (capture != PT_NONE) meta->halfmove_clock = 0;
   meta->en_passant_castling_rights &= 0xFF000000000000FF; // clear en passant potentials
 
-  enum PIECE_TYPE promo_type, castle_rook;
+  piece_type promo_type, castle_rook;
 
   switch (m->type)
   {
@@ -117,7 +117,7 @@ int
 move_unmake(move *m, board_state *board)
 {
   int value;
-  enum PIECE_TYPE piece = board->types[m->to],
+  piece_type piece = board->types[m->to],
   capture = m->capture;
 
   value = eval_piece_value(capture);
@@ -126,7 +126,7 @@ move_unmake(move *m, board_state *board)
   bitboard_set(board->bitboards[capture], m->to);
   board->types[m->to] = capture;
 
-  enum PIECE_TYPE prepromo_type, castle_rook;
+  piece_type prepromo_type, castle_rook;
 
   switch (m->type)
   {
