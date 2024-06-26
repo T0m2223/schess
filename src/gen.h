@@ -3,16 +3,17 @@
 #include <stddef.h>
 #include "types.h"
 
+#define MAX_MOVES_NUM 218
 struct move_buffer
 {
-  move *data;
   size_t size;
+  move moves[MAX_MOVES_NUM];
 };
 
-struct move_buffer
-*move_buffer_create(size_t max_ply);
+struct move_buffer *
+move_buffer_create(size_t max_ply);
 
 size_t
-generate_moves(bitboard own[6], bitboard other[6], enum PIECE_TYPE types[64], irreversable_state meta, struct move_buffer *out);
+generate_moves(bitboard own[6], bitboard other[6], piece_type types[64], irreversable_state meta, struct move_buffer *out);
 
 #endif // SCHESS_GEN_H
