@@ -1,7 +1,7 @@
+#include <schess/gen.h>
+#include <schess/move.h>
+#include <schess/types.h>
 #include <stddef.h>
-#include "gen.h"
-#include "move.h"
-#include "types.h"
 
 int quiesce(int alpha, int beta)
 {

@@ -1,7 +1,7 @@
+#include <schess/types.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include "types.h"
 
 int
 parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)

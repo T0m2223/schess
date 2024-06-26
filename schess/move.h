@@ -1,7 +1,7 @@
 #ifndef SCHESS_MOVES_H
 #define SCHESS_MOVES_H
 
-#include "types.h"
+#include <schess/types.h>
 
 int
 move_make(move *m, board_state *board, irreversable_state *meta);

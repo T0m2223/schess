@@ -1,5 +1,5 @@
+#include <schess/move.h>
 #include <stddef.h>
-#include <move.h>
 
 static inline bitboard
 bitboard_set(bitboard b, size_t idx) { return b | (1 << idx); }

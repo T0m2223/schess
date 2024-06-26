@@ -1,9 +1,9 @@
+#include <schess/gen.h>
+#include <schess/types.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <x86intrin.h>
-#include "types.h"
-#include "gen.h"
 
 
 // TODO: table fill

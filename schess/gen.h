@@ -1,7 +1,7 @@
 #ifndef SCHESS_GEN_H
 #define SCHESS_GEN_H
+#include <schess/types.h>
 #include <stddef.h>
-#include "types.h"
 
 #define MAX_MOVES_NUM 218
 struct move_buffer
