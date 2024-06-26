@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "gen.h"
-#include "moves.h"
+#include "move.h"
 #include "types.h"
 
 int quiesce(int alpha, int beta)
@@ -10,6 +10,8 @@ int quiesce(int alpha, int beta)
 
 int
 alpha_beta_min(board_state *board, irreversable_state meta, int alpha, int beta, unsigned depth, struct move_buffer *mbuf);
+int
+alpha_beta_min(board_state *board, irreversable_state meta, int alpha, int beta, unsigned depth, struct move_buffer *mbuf) { return 1; }
 
 int
 alpha_beta_max(board_state *board, irreversable_state meta, int alpha, int beta, unsigned depth, struct move_buffer *mbuf)
@@ -25,7 +27,7 @@ alpha_beta_max(board_state *board, irreversable_state meta, int alpha, int beta,
   for (i = 0; i < num_moves; ++i)
   {
     // move ordering
-    move *m = mbuf[depth].data + i;
+    move *m = mbuf[depth].moves + i;
 
     meta_copy = meta;
     move_make(m, board, &meta_copy);
