@@ -5,11 +5,15 @@ Reps:
 [x] - Move type: add CASTLE_PREVENTION_B/W move (regular rook move or regular king move); unset bits in irreversable state in move_make for CASTLE + CASTLE_PREVENTION
 [x] - Castle-prevention-promotion?
 [x] - Game state: halfmove, ep (as bitboard), castling
+[ ] - replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex
 
 
 Move Gen:
 [ ] - Pseudo-legal
-[ ] - Bitboard shifts for sliding
+[x] - Bitboard shifts for sliding
+[ ] - LUTs for everything
+[x] - sliding moves
+[ ] - king, knight, pawn
 
 
 Search:
@@ -31,3 +35,6 @@ Eval:
 
 TOTEST:
 [ ] - gen generated moves contain bitboards for to and from, move_make uses them instead of indices; remember: adjust EVERY literal in moves.c
+[ ] - gen moves test separated captures and silents (hardcode PT_NONE)
+[ ] - gen first only generate captures, then silents
+[ ] - move make: handle en_passant not in irreversable state, but set whenever pawn moves (removes one &-operation) ; also: if ep and castle are mixed: what happens if king stands next to ep pawn? can he castle?
