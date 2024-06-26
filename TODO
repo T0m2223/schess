@@ -5,7 +5,7 @@ Reps:
 [x] - Move type: add CASTLE_PREVENTION_B/W move (regular rook move or regular king move); unset bits in irreversable state in move_make for CASTLE + CASTLE_PREVENTION
 [x] - Castle-prevention-promotion?
 [x] - Game state: halfmove, ep (as bitboard), castling
-[ ] - replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex
+[ ] - replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex EVERYWHERE (also &= ~)
 
 
 Move Gen:
@@ -14,6 +14,7 @@ Move Gen:
 [ ] - LUTs for everything
 [x] - sliding moves
 [ ] - king, knight, pawn
+[ ] - castling: check for checks on king and on +-1 next to him (rook attack vertically + horziontally for other castling direction; 2 diags for bishop ray (always || PT_WBQ); knight and pawn check: bitboard mask & knight/pawn bb)
 
 
 Search:
