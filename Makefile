@@ -6,7 +6,8 @@ SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 BIN := $(TARGET_DIR)/schess
 
-CFLAGS := -Wall -Wextra -O3
+CFLAGS := -Wall -Wextra -O3 -Isrc
+CFLAGS += -mbmi2
 
 .PHONY: all debug clean run
 
