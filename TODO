@@ -33,6 +33,10 @@ Eval:
 [ ] - ?
 
 
+Cleaness:
+[ ] - make portable (// LINUX // X86 comments)
+[ ] - change unsigned to size_t for lut offsets?
+
 
 TOTEST:
 [ ] - gen generated moves contain bitboards for to and from, move_make uses them instead of indices; remember: adjust EVERY literal in moves.c
