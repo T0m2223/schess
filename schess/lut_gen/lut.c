@@ -1,7 +1,6 @@
 #include <schess/lut_gen/lut.h>
 #include <x86intrin.h>
 
-
 static const bitboard file_attack = 0x0101010101010101;
 static const bitboard rank_attack = 0x00000000000000FF;
 static const bitboard not_a_file = ~0x0101010101010101;
@@ -99,7 +98,7 @@ lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES], 
     // GCC
     num_entries = __builtin_popcount(mask[sq]);
 
-    for (board = 0; board < (1 << num_entries); ++board)
+    for (board = 0; board < (1u << num_entries); ++board)
     {
       // X86
       lut[current_offset++] = lut_calc_rook_attacks(_pdep_u64(board, mask[sq]), sq);
@@ -161,7 +160,7 @@ lut_fill_bishop_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES]
     // GCC
     num_entries = __builtin_popcount(mask[sq]);
 
-    for (board = 0; board < (1 << num_entries); ++board)
+    for (board = 0; board < (1u << num_entries); ++board)
     {
       // X86
       lut[current_offset++] = lut_calc_bishop_attacks(_pdep_u64(board, mask[sq]), sq);
@@ -196,7 +195,6 @@ lut_fill_king_attacks(bitboard lut[NUM_SQUARES])
 
 
 
-
 void
 lut_gen_knight(bitboard lut[NUM_SQUARES]) { lut_fill_knight_attacks(lut); }
 void
@@ -220,7 +218,6 @@ lut_gen_bishop_rook(bitboard lut[LUT_BISHOP_SIZE + LUT_ROOK_SIZE], bitboard bish
 int
 main(int argc, char **argv)
 {
-
   if (argc != 8)
   {
     fprintf(stderr, "Required arguments: <knightLUT_file> <kingLUT_file> <bishop_rookLUT_file> <bishop_mask_file> <rook_mask_file> <bishop_offset_file> <rook_offset_file>\n");
@@ -228,9 +225,8 @@ main(int argc, char **argv)
   }
 
   // LINUX
-
 #define LUT_GEN_MAP_FILE(varname, arg, LUT_size, datatype) \
-  int fd_## varname = open((arg), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); \
+  int fd_## varname = open((arg), O_CREAT | O_RDWR, 0666); \
   if (fd_## varname == -1) \
   { \
     fprintf(stderr, "Error reading %s: %s\n", (arg), strerror(errno)); \
@@ -241,7 +237,7 @@ main(int argc, char **argv)
     fprintf(stderr, "Error truncating size of %s: %s\n", (arg), strerror(errno)); \
     exit(EXIT_FAILURE); \
   } \
-  datatype *varname = mmap(0, (size) * sizeof(datatype), PROT_WRITE, MAP_SHARED, fd_## varname, 0); \
+  datatype *varname = mmap(0, (LUT_size) * sizeof(datatype), PROT_WRITE, MAP_SHARED, fd_## varname, 0); \
   if (varname == MAP_FAILED) \
   { \
     fprintf(stderr, "Error mapping %s: %s\n", (arg), strerror(errno)); \
@@ -256,45 +252,8 @@ main(int argc, char **argv)
   LUT_GEN_MAP_FILE(bishop_offset, argv[6], NUM_SQUARES, unsigned);
   LUT_GEN_MAP_FILE(rook_offset,   argv[7], NUM_SQUARES, unsigned);
 
-  int fd_knight        = open(argv[1], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_king          = open(argv[2], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_bishop_rook   = open(argv[3], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_bishop_mask   = open(argv[4], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_rook_mask     = open(argv[5], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_bishop_offset = open(argv[6], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  int fd_rook_offset   = open(argv[7], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+#undef LUT_GEN_MAP_FILE
 
-  if (fd_knight        == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[1], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_king          == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[2], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_bishop_rook   == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[3], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_bishop_mask   == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[4], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_rook_mask     == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[5], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_bishop_offset == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[6], strerror(errno)); exit(EXIT_FAILURE); }
-  if (fd_rook_offset   == -1) { fprintf(stderr, "Error reading %s: %s\n", argv[7], strerror(errno)); exit(EXIT_FAILURE); }
-
-  ftruncate(fd_knight       , NUM_SQUARES * sizeof(bitboard));
-  ftruncate(fd_king         , NUM_SQUARES * sizeof(bitboard));
-  ftruncate(fd_bishop_rook  , (LUT_BISHOP_SIZE + LUT_ROOK_SIZE) * sizeof(bitboard));
-  ftruncate(fd_bishop_mask  , NUM_SQUARES * sizeof(bitboard));
-  ftruncate(fd_rook_mask    , NUM_SQUARES * sizeof(bitboard));
-  ftruncate(fd_bishop_offset, NUM_SQUARES * sizeof(unsigned));
-  ftruncate(fd_rook_offset  , NUM_SQUARES * sizeof(unsigned));
-
-  bitboard *knight        = mmap(0, NUM_SQUARES * sizeof(bitboard), PROT_WRITE, MAP_SHARED, fd_knight, 0);
-  bitboard *king          = mmap(0, NUM_SQUARES * sizeof(bitboard), PROT_WRITE, MAP_SHARED, fd_king, 0);
-  bitboard *bishop_rook   = mmap(0, (LUT_BISHOP_SIZE + LUT_ROOK_SIZE) * sizeof(bitboard), PROT_WRITE, MAP_SHARED, fd_bishop_rook, 0);
-  bitboard *bishop_mask   = mmap(0, NUM_SQUARES * sizeof(bitboard), PROT_WRITE, MAP_SHARED, fd_bishop_mask, 0);
-  bitboard *rook_mask     = mmap(0, NUM_SQUARES * sizeof(bitboard), PROT_WRITE, MAP_SHARED, fd_rook_mask, 0);
-  unsigned *bishop_offset = mmap(0, NUM_SQUARES * sizeof(unsigned), PROT_WRITE, MAP_SHARED, fd_bishop_offset, 0);
-  unsigned *rook_offset   = mmap(0, NUM_SQUARES * sizeof(unsigned), PROT_WRITE, MAP_SHARED, fd_rook_offset, 0);
-
-  if (knight        == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[1], strerror(errno)); exit(EXIT_FAILURE); }
-  if (king          == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[2], strerror(errno)); exit(EXIT_FAILURE); }
-  if (bishop_rook   == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[3], strerror(errno)); exit(EXIT_FAILURE); }
-  if (bishop_mask   == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[4], strerror(errno)); exit(EXIT_FAILURE); }
-  if (rook_mask     == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[5], strerror(errno)); exit(EXIT_FAILURE); }
-  if (bishop_offset == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[6], strerror(errno)); exit(EXIT_FAILURE); }
-  if (rook_offset   == MAP_FAILED) { fprintf(stderr, "Error mapping %s: %s\n", argv[7], strerror(errno)); exit(EXIT_FAILURE); }
 
 
   lut_gen_knight(knight);
@@ -302,22 +261,31 @@ main(int argc, char **argv)
   lut_gen_bishop_rook(bishop_rook, bishop_mask, rook_mask, bishop_offset, rook_offset);
 
 
-  // LINUX
-  munmap(knight       , NUM_SQUARES * sizeof(bitboard));
-  munmap(king         , NUM_SQUARES * sizeof(bitboard));
-  munmap(bishop_rook  , NUM_SQUARES * sizeof(bitboard));
-  munmap(bishop_mask  , NUM_SQUARES * sizeof(bitboard));
-  munmap(rook_mask    , NUM_SQUARES * sizeof(bitboard));
-  munmap(bishop_offset, NUM_SQUARES * sizeof(unsigned));
-  munmap(rook_offset  , NUM_SQUARES * sizeof(unsigned));
 
-  close(fd_knight);
-  close(fd_king);
-  close(fd_bishop_rook);
-  close(fd_bishop_mask);
-  close(fd_rook_mask);
-  close(fd_bishop_offset);
-  close(fd_rook_offset);
+  // LINUX
+#define LUT_GEN_UNMAP_FILE(varname, arg, LUT_size, datatype) \
+  if (munmap(varname, (LUT_size) * sizeof(datatype))) \
+  { \
+    fprintf(stderr, "Error unmapping %s: %s\n", (arg), strerror(errno)); \
+    exit(EXIT_FAILURE); \
+  } \
+  if (close(fd_## varname)) \
+  { \
+    fprintf(stderr, "Error closing %s: %s\n", (arg), strerror(errno)); \
+    exit(EXIT_FAILURE); \
+  }
+
+  LUT_GEN_UNMAP_FILE(knight,        argv[1], NUM_SQUARES, bitboard);
+  LUT_GEN_UNMAP_FILE(king,          argv[2], NUM_SQUARES, bitboard);
+  LUT_GEN_UNMAP_FILE(bishop_rook,   argv[3], LUT_BISHOP_SIZE + LUT_ROOK_SIZE, bitboard);
+  LUT_GEN_UNMAP_FILE(bishop_mask,   argv[4], NUM_SQUARES, bitboard);
+  LUT_GEN_UNMAP_FILE(rook_mask,     argv[5], NUM_SQUARES, bitboard);
+  LUT_GEN_UNMAP_FILE(bishop_offset, argv[6], NUM_SQUARES, unsigned);
+  LUT_GEN_UNMAP_FILE(rook_offset,   argv[7], NUM_SQUARES, unsigned);
+
+#undef LUT_GEN_UNMAP_FILE
+
+
 
   return EXIT_SUCCESS;
 }
