@@ -14,7 +14,8 @@ Move Gen:
 [ ] - LUTs for everything
 [x] - sliding moves
 [ ] - king, knight, pawn
-[ ] - castling: check for checks on king and on +-1 next to him (rook attack vertically + horziontally for other castling direction; 2 diags for bishop ray (always || PT_WBQ); knight and pawn check: bitboard mask & knight/pawn bb)
+[ ] - castling: check for checks on king and on +-1 next to him (rook attack vertically + horziontally for other castling direction; 2 diags for bishop ray (always || PT_WBQ); knight and pawn check: bitboard mask & knight/pawn bb) https://www.chessprogramming.org/Square_Attacked_By
+[ ] - ^ also: maybe just use queen LUT for rook and bishop and test and knight LUT for knight testing ;) (genius)
 
 
 Search:
@@ -34,7 +35,7 @@ Eval:
 
 
 Cleaness:
-[ ] - make portable (// LINUX // X86 comments)
+[ ] - make portable (// LINUX // X86 // GCC comments)
 [ ] - change unsigned to size_t for lut offsets?
 
 
