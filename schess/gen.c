@@ -11,19 +11,21 @@ bitboard attack_table[88316];
 
 // TODO: table fill
 static bitboard rook_mask[NUM_SQUARES];
-static bitboard rook_offset[NUM_SQUARES];
+static unsigned rook_offset[NUM_SQUARES];
 static inline bitboard
 rook_attacks(bitboard occ, square sq)
 {
+  // X86
   return attack_table[rook_offset[sq] + _pext_u64(occ, rook_mask[sq])];
 }
 
 // TODO: table fill
 static bitboard bishop_mask[NUM_SQUARES];
-static bitboard bishop_offset[NUM_SQUARES];
+static unsigned bishop_offset[NUM_SQUARES];
 static inline bitboard
 bishop_attacks(bitboard occ, square sq)
 {
+  // X86
   return attack_table[bishop_offset[sq] + _pext_u64(occ, rook_mask[sq])];
 }
 
@@ -38,6 +40,7 @@ static inline bitboard
 pop_bit(bitboard *board)
 {
   // TODO: danger; wrong word size
+  // LINUX
   square first = ffsl(*board) - 1;
   *board ^= (1 << first);
   return first;

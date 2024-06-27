@@ -148,12 +148,12 @@ move_unmake(move *m, board_state *board)
   case MT_CASTLE_KING:
     castle_rook = piece + (PR_R - PR_K);
     bitboard_unset(board->bitboards[castle_rook], m->to - 1);
-    bitboard_set(board->bitboards[castle_rook], m->from | 0x3);
+    bitboard_set(board->bitboards[castle_rook], m->from | 0x3); // TODO: probably wrong
     break;
   case MT_CASTLE_QUEEN:
     castle_rook = piece + (PR_R - PR_K);
     bitboard_unset(board->bitboards[castle_rook], m->to + 1);
-    bitboard_set(board->bitboards[castle_rook], m->from & ~0x3);
+    bitboard_set(board->bitboards[castle_rook], m->from & ~0x3); // TODO: probably wrong
     break;
 
 #define MOVE_UNMAKE_HANDLE_PROMOTION(rel_type) \
