@@ -5,15 +5,15 @@ Reps:
 [x] - Move type: add CASTLE_PREVENTION_B/W move (regular rook move or regular king move); unset bits in irreversable state in move_make for CASTLE + CASTLE_PREVENTION
 [x] - Castle-prevention-promotion?
 [x] - Game state: halfmove, ep (as bitboard), castling
-[ ] - replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex EVERYWHERE (also &= ~)
 
 
 Move Gen:
 [ ] - Pseudo-legal
 [x] - Bitboard shifts for sliding
-[ ] - LUTs for everything
+[x] - LUTs for everything
 [x] - sliding moves
-[ ] - king, knight, pawn
+[x] - king, knight
+[ ] - pawn
 [ ] - castling: check for checks on king and on +-1 next to him (rook attack vertically + horziontally for other castling direction; 2 diags for bishop ray (always || PT_WBQ); knight and pawn check: bitboard mask & knight/pawn bb) https://www.chessprogramming.org/Square_Attacked_By
 [ ] - ^ also: maybe just use queen LUT for rook and bishop and test and knight LUT for knight testing ;) (genius)
 
@@ -37,10 +37,12 @@ Eval:
 Cleaness:
 [ ] - make portable (// LINUX // X86 // GCC comments)
 [ ] - change unsigned to size_t for lut offsets?
+[ ] - maybe replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex EVERYWHERE (also &= ~)
 
 
 TOTEST:
-[ ] - gen generated moves contain bitboards for to and from, move_make uses them instead of indices; remember: adjust EVERY literal in moves.c
+[ ] - gen generated moves contain bitboards for to and from, move_make uses them instead of indices; remember: adjust EVERY literal in moves.c // rather not, because they are extracted with lsb and putting it back is calculated once anyways
 [ ] - gen moves test separated captures and silents (hardcode PT_NONE)
 [ ] - gen first only generate captures, then silents
+[ ] - gen: separate functions for king move gen (without PR offset)
 [ ] - move make: handle en_passant not in irreversable state, but set whenever pawn moves (removes one &-operation) ; also: if ep and castle are mixed: what happens if king stands next to ep pawn? can he castle?
