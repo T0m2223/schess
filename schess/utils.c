@@ -84,6 +84,8 @@ parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
   if (section != 6) return 1;
 
   memset(meta, 0, sizeof(*meta));
+
+  // HALFMOVE_CLOCK
   meta->halfmove_clock = sections[HALFMOVE_CLOCK][0] - '0';
   if (sections[HALFMOVE_CLOCK][1] >= '0' && sections[HALFMOVE_CLOCK][1] <= '9')
   {
@@ -91,6 +93,33 @@ parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
     meta->halfmove_clock += sections[HALFMOVE_CLOCK][1] - '0';
   }
 
+  // CASTLING
+  const char *c;
+  for (c = sections[CASTLING]; *c != ' '; ++c)
+  {
+    switch (*c)
+    {
+    case 'K':
+      meta->castling_rights |= 0x0000000000000040;
+      break;
+    case 'Q':
+      meta->castling_rights |= 0x0000000000000004;
+      break;
+    case 'k':
+      meta->castling_rights |= 0x4000000000000000;
+      break;
+    case 'q':
+      meta->castling_rights |= 0x0400000000000000;
+      break;
+    case '-':
+    default: // TODO: maybe error?
+      break;
+    }
+  }
+
+  // TODO: EP
+
+  // BOARD
   const char *board_string = sections[BOARD];
 
   return parse_board(board_string, board);
