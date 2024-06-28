@@ -31,7 +31,6 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   board->types[m->from] = PT_NONE;
 
   if (capture != PT_NONE) meta->halfmove_clock = 0;
-  meta->en_passant_castling_rights &= 0xFF000000000000FF; // clear en passant potentials
 
   piece_type promo_type, castle_rook;
 
@@ -41,7 +40,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
     break;
   case MT_DOUBLE_PAWN:
-    meta->en_passant_castling_rights |= (1 << m->to) & 0x0000FF0000FF0000;
+    meta->en_passant_potential = (1 << m->to) & 0x0000FF0000FF0000;
     meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:
@@ -87,21 +86,21 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   // unset castle rights if rook is taken
   switch (m->to)
   {
-  case 0x07: meta->en_passant_castling_rights &= 0xFF00FF0000FF000F; break;
-  case 0x00: meta->en_passant_castling_rights &= 0xFF00FF0000FF00F0; break;
-  case 0x3F: meta->en_passant_castling_rights &= 0x0F00FF0000FF00FF; break;
-  case 0x37: meta->en_passant_castling_rights &= 0xF000FF0000FF00FF; break;
+  case 0x07: meta->castling_rights &= 0xFF0000000000000F; break;
+  case 0x00: meta->castling_rights &= 0xFF000000000000F0; break;
+  case 0x3F: meta->castling_rights &= 0x0F000000000000FF; break;
+  case 0x37: meta->castling_rights &= 0xF0000000000000FF; break;
   default: break;
   }
 
   switch (m->from)
   {
-  case 0x07: meta->en_passant_castling_rights &= 0xFF00FF0000FF000F; break; // white rook kingside moved
-  case 0x00: meta->en_passant_castling_rights &= 0xFF00FF0000FF00F0; break; // white rook queenside moved
-  case 0x3F: meta->en_passant_castling_rights &= 0x0F00FF0000FF00FF; break; // black rook kingside moved
-  case 0x37: meta->en_passant_castling_rights &= 0xF000FF0000FF00FF; break; // black rook queenside moved
-  case 0x04: meta->en_passant_castling_rights &= 0xFF00FF0000FF0000; break; // white king moved
-  case 0x3C: meta->en_passant_castling_rights &= 0x0000FF0000FF00FF; break; // black king moved
+  case 0x07: meta->castling_rights &= 0xFF0000000000000F; break; // white rook kingside moved
+  case 0x00: meta->castling_rights &= 0xFF000000000000F0; break; // white rook queenside moved
+  case 0x3F: meta->castling_rights &= 0x0F000000000000FF; break; // black rook kingside moved
+  case 0x37: meta->castling_rights &= 0xF0000000000000FF; break; // black rook queenside moved
+  case 0x04: meta->castling_rights &= 0xFF00000000000000; break; // white king moved
+  case 0x3C: meta->castling_rights &= 0x00000000000000FF; break; // black king moved
   default: break;
   }
 

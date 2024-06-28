@@ -55,7 +55,8 @@ typedef struct
 typedef struct
 {
   unsigned halfmove_clock;
-  bitboard en_passant_castling_rights;
+  bitboard castling_rights;
+  bitboard en_passant_potential;
 } irreversable_state;
 
 
