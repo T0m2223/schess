@@ -1,24 +1,31 @@
+#include <schess/gen.h>
+#include <schess/move.h>
 #include <schess/types.h>
+#include <schess/utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-int i = 3;
-
 int main(int argc, char **argv)
 {
-  uint64_t big;
+  board_state board;
+  irreversable_state meta;
 
-  big = strtoull(argv[1], NULL, 16);
 
-  switch (big)
-  {
-  case 0x1: return 1;
-  case 0x12: return 23;
-  case 0x13: return 30;
-  case 0x14: return 4;
-  case 0x15: return 70;
-  case 0x16: return 65;
-  default: break;
-  }
-  return 0;
+  parse_FEN(argv[1], &board, &meta);
+  printf("Board read in:\n");
+  print_board(&board);
+
+
+  struct move_buffer *mbuf = move_buffer_create(1);
+  move_gen_init_LUTs();
+  generate_moves(&board, meta, PT_WP, PT_BP, mbuf);
+  printf("Possible moves:\n");
+  print_moves(&board, mbuf);
+
+
+  move_make(mbuf->moves, &board, &meta);
+  printf("After making move 0:\n");
+  print_board(&board);
+
+  return EXIT_SUCCESS;
 }

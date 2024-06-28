@@ -29,6 +29,9 @@ typedef struct
   piece_type types[NUM_SQUARES];
 } board_state;
 
+static inline bitboard
+sq2bb(square sq) { return (1ull << sq); }
+
 
 /* MOVE */
 enum MOVE_TYPE

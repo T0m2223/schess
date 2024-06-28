@@ -1,11 +1,10 @@
 #include <schess/move.h>
-#include <stddef.h>
 
 static inline bitboard
-bitboard_set(bitboard b, size_t idx) { return b | (1ull << idx); }
+bitboard_set(bitboard b, square sq) { return b | sq2bb(sq); }
 
 static inline bitboard
-bitboard_unset(bitboard b, size_t idx) { return b & ~(1ull << idx); }
+bitboard_unset(bitboard b, square sq) { return b & ~sq2bb(sq); }
 
 
 // TODO: move to eval.c
@@ -40,7 +39,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
     break;
   case MT_DOUBLE_PAWN:
-    meta->en_passant_potential = (1ull << m->to) & 0x0000FF0000FF0000;
+    meta->en_passant_potential = sq2bb(m->to) & 0x0000FF0000FF0000;
     meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:

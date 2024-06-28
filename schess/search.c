@@ -22,7 +22,7 @@ alpha_beta_max(board_state *board, irreversable_state meta, int alpha, int beta,
   int score;
   irreversable_state meta_copy;
 
-  num_moves = generate_moves(&board->bitboards[PT_WP], &board->bitboards[PT_BP], board->types, meta, &mbuf[depth]);
+  num_moves = generate_moves(board, meta, PT_WP, PT_BP, &mbuf[depth]);
 
   for (i = 0; i < num_moves; ++i)
   {

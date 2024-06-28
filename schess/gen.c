@@ -39,7 +39,7 @@ pop_bit(bitboard *board)
   // TODO: danger; wrong word size
   // LINUX
   square first = ffsll(*board) - 1;
-  *board ^= (1ull << first);
+  *board ^= sq2bb(first);
   return first;
 }
 // TODO: rewrite
@@ -115,7 +115,7 @@ is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboa
   attacker  = rook_attacks(occ, sq)   & (other_pieces[PR_R] | other_pieces[PR_Q]);
   attacker |= bishop_attacks(occ, sq) & (other_pieces[PR_B] | other_pieces[PR_Q]);
   attacker |= knight_attacks[sq]      & (other_pieces[PR_N]);
-  attacker |= other_pawn_attacks      & (1ull << sq);
+  attacker |= other_pawn_attacks      & sq2bb(sq);
 
   return attacker != 0;
 }
@@ -124,6 +124,7 @@ static bitboard king_attacks[NUM_SQUARES];
 static inline void
 generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq, piece_type types[NUM_SQUARES], irreversable_state meta, struct move_buffer *out)
 {
+  bitboard occ = own | other;
   bitboard attacks = king_attacks[sq] & ~own;
   move_buffer_append_attacks(attacks, sq, types, out);
 
@@ -132,13 +133,17 @@ generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitb
 
   // castling moves
   // TODO: check for free space in between
-  bitboard castle_east = (1ull << (sq + 2)),
+  bitboard castle_east = sq2bb(sq + 2),
            castle_west = castle_east >> 4;
-  if (castle_east & meta.castling_rights && !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1, types))
+  if (castle_east & meta.castling_rights &&
+      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1, types) &&
+      !(occ & (sq2bb(sq + 1) | sq2bb(sq + 2))))
   {
     move_buffer_append_move(sq, sq + 2, PT_NONE, MT_CASTLE_KING, out);
   }
-  if (castle_west & meta.castling_rights && !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq - 1, types))
+  if (castle_west & meta.castling_rights &&
+      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq - 1, types) &&
+      !(occ & (sq2bb(sq - 1) | sq2bb(sq - 2) | sq2bb(sq - 3))))
   {
     move_buffer_append_move(sq, sq - 2, PT_NONE, MT_CASTLE_QUEEN, out);
   }

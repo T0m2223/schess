@@ -26,7 +26,7 @@ parse_board(const char *board_string, board_state *board)
       file = board_pos & 0x7; \
       rank = 0x7 - (board_pos >> 3); \
       sq   = (rank * 8) + file; \
-      board->bitboards[PT] |= (1ull << sq); \
+      board->bitboards[PT] |= sq2bb(sq); \
       board->types[sq] = PT; \
       ++board_pos; \
       break; \
