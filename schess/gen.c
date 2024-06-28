@@ -23,7 +23,7 @@ static inline bitboard
 bishop_attacks(bitboard occ, square sq)
 {
   // X86
-  return attack_table[bishop_offset[sq] + _pext_u64(occ, rook_mask[sq])];
+  return attack_table[bishop_offset[sq] + _pext_u64(occ, bishop_mask[sq])];
 }
 
 static inline bitboard
@@ -101,13 +101,14 @@ static bitboard knight_attacks[NUM_SQUARES];
 static inline void
 generate_knight_moves(bitboard own, bitboard other, square sq, piece_type types[NUM_SQUARES], struct move_buffer *out)
 {
+  (void) other;
   bitboard attacks = knight_attacks[sq] & ~own;
   move_buffer_append_attacks(attacks, sq, types, out);
 }
 
 // Does not check for 'checked by enemy king'
 static inline int
-is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq, piece_type types[NUM_SQUARES])
+is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq)
 {
   bitboard attacker;
   bitboard occ = own | other;
@@ -129,20 +130,19 @@ generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitb
   move_buffer_append_attacks(attacks, sq, types, out);
 
   // is king checked?
-  if (is_square_checked(own, other, other_pieces, other_pawn_attacks, sq, types)) return;
+  if (is_square_checked(own, other, other_pieces, other_pawn_attacks, sq)) return;
 
   // castling moves
-  // TODO: check for free space in between
   bitboard castle_east = sq2bb(sq + 2),
            castle_west = castle_east >> 4;
   if (castle_east & meta.castling_rights &&
-      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1, types) &&
+      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1) &&
       !(occ & (sq2bb(sq + 1) | sq2bb(sq + 2))))
   {
     move_buffer_append_move(sq, sq + 2, PT_NONE, MT_CASTLE_KING, out);
   }
   if (castle_west & meta.castling_rights &&
-      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq - 1, types) &&
+      !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq - 1) &&
       !(occ & (sq2bb(sq - 1) | sq2bb(sq - 2) | sq2bb(sq - 3))))
   {
     move_buffer_append_move(sq, sq - 2, PT_NONE, MT_CASTLE_QUEEN, out);
@@ -194,7 +194,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   while (singles)
   {
     to = pop_bit(&singles);
-    from = to >> 0x8;
+    from = to - 0x8;
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
@@ -207,13 +207,13 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   while (doubles)
   {
     to = pop_bit(&doubles);
-    from = to >> 0x10;
+    from = to - 0x10;
     move_buffer_append_move(from, to, PT_NONE, MT_DOUBLE_PAWN, out);
   }
   while (east_captures)
   {
     to = pop_bit(&east_captures);
-    from = to >> 0x9;
+    from = to - 0x9;
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
@@ -226,7 +226,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   while (west_captures)
   {
     to = pop_bit(&west_captures);
-    from = to >> 0x7;
+    from = to - 0x7;
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
@@ -267,7 +267,7 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (singles)
   {
     to = pop_bit(&singles);
-    from = to << 0x8;
+    from = to - 0x8;
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
@@ -280,13 +280,13 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (doubles)
   {
     to = pop_bit(&doubles);
-    from = to << 0x10;
+    from = to - 0x10;
     move_buffer_append_move(from, to, PT_NONE, MT_DOUBLE_PAWN, out);
   }
   while (east_captures)
   {
     to = pop_bit(&east_captures);
-    from = to << 0x7;
+    from = to - 0x7;
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
@@ -299,7 +299,7 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (west_captures)
   {
     to = pop_bit(&west_captures);
-    from = to << 0x9;
+    from = to - 0x9;
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
