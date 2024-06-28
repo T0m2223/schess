@@ -2,10 +2,10 @@
 #include <stddef.h>
 
 static inline bitboard
-bitboard_set(bitboard b, size_t idx) { return b | (1 << idx); }
+bitboard_set(bitboard b, size_t idx) { return b | (1ull << idx); }
 
 static inline bitboard
-bitboard_unset(bitboard b, size_t idx) { return b & ~(1 << idx); }
+bitboard_unset(bitboard b, size_t idx) { return b & ~(1ull << idx); }
 
 
 // TODO: move to eval.c
@@ -40,7 +40,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
     break;
   case MT_DOUBLE_PAWN:
-    meta->en_passant_potential = (1 << m->to) & 0x0000FF0000FF0000;
+    meta->en_passant_potential = (1ull << m->to) & 0x0000FF0000FF0000;
     meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:
@@ -48,7 +48,8 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     {
       bitboard_unset(board->bitboards[PT_BP], m->to + 8);
       value += eval_piece_value(PT_BP);
-    } else // piece = PT_BP
+    }
+    else // piece = PT_BP
     {
       bitboard_unset(board->bitboards[PT_WP], m->to - 8);
       value += eval_piece_value(PT_WP);
@@ -137,7 +138,8 @@ move_unmake(move *m, board_state *board)
     {
       bitboard_set(board->bitboards[PT_BP], m->to + 8);
       value += eval_piece_value(PT_BP);
-    } else // piece = PT_BP
+    }
+    else // piece = PT_BP
     {
       bitboard_set(board->bitboards[PT_WP], m->to - 8);
       value += eval_piece_value(PT_WP);
