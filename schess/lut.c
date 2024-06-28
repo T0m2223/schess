@@ -1,4 +1,4 @@
-#include <schess/lut_gen/lut.h>
+#include <schess/lut.h>
 #include <x86intrin.h>
 
 static const bitboard file_attack = 0x0101010101010101;
@@ -229,7 +229,7 @@ main(int argc, char **argv)
   int fd_## varname = open((arg), O_CREAT | O_RDWR, 0666); \
   if (fd_## varname == -1) \
   { \
-    fprintf(stderr, "Error reading %s: %s\n", (arg), strerror(errno)); \
+    fprintf(stderr, "Error opening %s: %s\n", (arg), strerror(errno)); \
     exit(EXIT_FAILURE); \
   } \
   if (ftruncate(fd_## varname, (LUT_size) * sizeof(datatype))) \
