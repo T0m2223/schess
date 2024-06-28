@@ -38,8 +38,8 @@ pop_bit(bitboard *board)
 {
   // TODO: danger; wrong word size
   // LINUX
-  square first = ffsl(*board) - 1;
-  *board ^= (1 << first);
+  square first = ffsll(*board) - 1;
+  *board ^= (1ull << first);
   return first;
 }
 // TODO: rewrite
@@ -48,7 +48,7 @@ log_bit(bitboard board)
 {
   // TODO: danger; wrong word size
   // LINUX
-  return ffsl(board) - 1;
+  return ffsll(board) - 1;
 }
 
 
@@ -105,6 +105,7 @@ generate_knight_moves(bitboard own, bitboard other, square sq, piece_type types[
   move_buffer_append_attacks(attacks, sq, types, out);
 }
 
+// Does not check for 'checked by enemy king'
 static inline int
 is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq, piece_type types[NUM_SQUARES])
 {
@@ -114,7 +115,7 @@ is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboa
   attacker  = rook_attacks(occ, sq)   & (other_pieces[PR_R] | other_pieces[PR_Q]);
   attacker |= bishop_attacks(occ, sq) & (other_pieces[PR_B] | other_pieces[PR_Q]);
   attacker |= knight_attacks[sq]      & (other_pieces[PR_N]);
-  attacker |= other_pawn_attacks      & (1u << sq);
+  attacker |= other_pawn_attacks      & (1ull << sq);
 
   return attacker != 0;
 }
@@ -130,7 +131,8 @@ generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitb
   if (is_square_checked(own, other, other_pieces, other_pawn_attacks, sq, types)) return;
 
   // castling moves
-  bitboard castle_east = (1u << (sq + 2)),
+  // TODO: check for free space in between
+  bitboard castle_east = (1ull << (sq + 2)),
            castle_west = castle_east >> 4;
   if (castle_east & meta.castling_rights && !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1, types))
   {
@@ -191,7 +193,8 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, PT_NONE, out);
     }
@@ -209,7 +212,8 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, types[to], out);
     }
@@ -221,7 +225,8 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, types[to], out);
     }
@@ -233,7 +238,7 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
 {
   bitboard occ = own | other,
            singles = (pieces  >> 0x8) & ~occ,
-           doubles = (singles >> 0x8) & ~occ & rank_4,
+           doubles = (singles >> 0x8) & ~occ & rank_5,
            east_captures = (singles << 0x1) & ~a_file & other,
            west_captures = (singles >> 0x1) & ~h_file & other;
 
@@ -261,7 +266,8 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, PT_NONE, out);
     }
@@ -279,7 +285,8 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, types[to], out);
     }
@@ -291,7 +298,8 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
     if (to & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
-    } else // promotion
+    }
+    else // promotion
     {
       move_buffer_append_promotions(from, to, types[to], out);
     }
