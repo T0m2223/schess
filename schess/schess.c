@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   board_state board;
   irreversable_state meta;
 
 
-  parse_FEN(argv[1], &board, &meta);
+  parse_FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", &board, &meta);
   printf("Board read in:\n");
   print_board(&board);
 
