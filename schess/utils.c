@@ -1,7 +1,70 @@
-#include <schess/types.h>
+#include <schess/utils.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+
+int
+parse_board(const char *board_string, board_state *board)
+{
+  size_t string_pos;
+  size_t board_pos = 0;
+
+  memset(board, 0, sizeof(*board));
+
+  char c;
+  unsigned file, rank;
+  square sq;
+
+  for (string_pos = 0; board_string[string_pos] != ' '; ++string_pos)
+  {
+    c = board_string[string_pos];
+
+#define PARSE_REGISTER_PIECE_CASE(lit, PT) \
+  case (lit): \
+    { \
+      file = board_pos & 0x7; \
+      rank = 0x7 - (board_pos >> 3); \
+      sq   = (rank * 8) + file; \
+      board->bitboards[PT] |= (1ull << sq); \
+      board->types[sq] = PT; \
+      ++board_pos; \
+      break; \
+    }
+
+    switch (c)
+    {
+      PARSE_REGISTER_PIECE_CASE('P', PT_WP);
+      PARSE_REGISTER_PIECE_CASE('N', PT_WN);
+      PARSE_REGISTER_PIECE_CASE('B', PT_WB);
+      PARSE_REGISTER_PIECE_CASE('R', PT_WR);
+      PARSE_REGISTER_PIECE_CASE('Q', PT_WQ);
+      PARSE_REGISTER_PIECE_CASE('K', PT_WK);
+      PARSE_REGISTER_PIECE_CASE('p', PT_BP);
+      PARSE_REGISTER_PIECE_CASE('n', PT_BN);
+      PARSE_REGISTER_PIECE_CASE('b', PT_BB);
+      PARSE_REGISTER_PIECE_CASE('r', PT_BR);
+      PARSE_REGISTER_PIECE_CASE('q', PT_BQ);
+      PARSE_REGISTER_PIECE_CASE('k', PT_BK);
+
+    case '/':
+      if (board_pos % 8 != 0) return 2;
+      break;
+    default:
+      if (c > '0' && c <= '8')
+      {
+        board_pos += c - '0';
+        break;
+      }
+      return 3;
+    }
+
+#undef PARSE_REGISTER_PIECE_CASE
+
+  }
+
+  return 0;
+}
 
 int
 parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
@@ -30,86 +93,38 @@ parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
 
   const char *board_string = sections[BOARD];
 
-  size_t string_pos;
-  size_t board_pos = 0;
-
-  memset(board, 0, sizeof(*board));
-  for (string_pos = 0; board_string[string_pos] != ' '; ++string_pos)
-  {
-    char c = board_string[string_pos];
-    switch (c)
-    {
-    case 'P':
-      board->bitboards[PT_WP] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WP;
-      break;
-    case 'N':
-      board->bitboards[PT_WN] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WN;
-      break;
-    case 'B':
-      board->bitboards[PT_WB] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WB;
-      break;
-    case 'R':
-      board->bitboards[PT_WR] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WR;
-      break;
-    case 'Q':
-      board->bitboards[PT_WQ] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WQ;
-      break;
-    case 'K':
-      board->bitboards[PT_WK] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_WK;
-      break;
-    case 'p':
-      board->bitboards[PT_BP] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BP;
-      break;
-    case 'n':
-      board->bitboards[PT_BN] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BN;
-      break;
-    case 'b':
-      board->bitboards[PT_BB] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BB;
-      break;
-    case 'r':
-      board->bitboards[PT_BR] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BR;
-      break;
-    case 'q':
-      board->bitboards[PT_BQ] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BQ;
-      break;
-    case 'k':
-      board->bitboards[PT_BK] |= 1 << board_pos;
-      board->types[63 - board_pos++] = PT_BK;
-      break;
-    case '/':
-      if (board_pos % 8 != 0) return 2;
-      break;
-    default:
-      if (c > '0' && c <= '8')
-        board_pos += c - '0';
-      break;
-      return 3;
-    }
-  }
-
-  return 0;
+  return parse_board(board_string, board);
 }
 
 void
 print_board(board_state *board)
 {
-  size_t i = 0;
-  for (size_t c = 0; c < 8; ++c)
-  {
-    for (size_t r = 0; r < 8; ++r)
-      printf("%d ", board->types[i++]);
+  piece_type type;
 
+  for (size_t r = 0; r < 8; ++r)
+  {
+    printf("+----+----+----+----+----+----+----+----+\n|");
+    for (size_t c = 0; c < 8; ++c)
+    {
+      type = board->types[((7 - r) * 8) + c];
+      printf(" %s |", piece_names[type]);
+    }
     printf("\n");
+  }
+  printf("+----+----+----+----+----+----+----+----+\n");
+}
+
+void
+print_moves(board_state *board, struct move_buffer *mbuf)
+{
+  size_t i;
+
+  for (i = 0; i < mbuf->size; ++i)
+  {
+    move m = mbuf->moves[i];
+    printf("[%3zu]: (%s) %s -> %s (%s)  | %s\n",
+        i, piece_names[board->types[m.from]],
+        square_names[m.from], square_names[m.to],
+        piece_names[m.capture], move_names[m.type]);
   }
 }
