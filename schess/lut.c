@@ -1,10 +1,13 @@
 #include <schess/lut.h>
 #include <x86intrin.h>
 
-static const bitboard file_attack = 0x0101010101010101;
-static const bitboard rank_attack = 0x00000000000000FF;
+static const bitboard file_attack = 0x0001010101010100;
+static const bitboard rank_attack = 0x000000000000007E;
 static const bitboard not_a_file = ~0x0101010101010101;
 static const bitboard not_h_file = ~0x8080808080808080;
+static const bitboard not_1_rank = ~0x00000000000000FF;
+static const bitboard not_8_rank = ~0xFF00000000000000;
+static const bitboard no_edges = not_a_file & not_h_file & not_1_rank & not_8_rank;
 
 // directional move functions
 static inline bitboard no(bitboard b) { return (b << 8); }
@@ -33,7 +36,7 @@ lut_fill_knight_attacks(bitboard lut[NUM_SQUARES])
 
   for (sq = a1; sq < NUM_SQUARES; ++sq)
   {
-    knight = (1 << sq);
+    knight = (1ull << sq);
     lut[sq] = 0;
     lut[sq] |= nonoea(knight);
     lut[sq] |= noeaea(knight);
@@ -56,7 +59,7 @@ lut_calc_rook_attacks(bitboard occ, square sq)
 
 #define LUT_CALC_ROOK_ATTACKS_DIR(dir) do \
   { \
-    rook = 1 << sq; \
+    rook = (1ull << sq); \
     while (rook) \
     { \
       rook = dir(rook); \
@@ -90,15 +93,15 @@ lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES], 
 
     // generate mask
     file = sq & 0x7;
-    rank = sq >> 0x3;
+    rank = sq & 0x38;
     mask[sq]  = file_attack << file;
     mask[sq] |= rank_attack << rank;
-    mask[sq] &= ~(1 << sq);
+    mask[sq] &= ~(1ull << sq);
 
     // GCC
-    num_entries = __builtin_popcount(mask[sq]);
+    num_entries = __builtin_popcountll(mask[sq]);
 
-    for (board = 0; board < (1u << num_entries); ++board)
+    for (board = 0; board < (1ull << num_entries); ++board)
     {
       // X86
       lut[current_offset++] = lut_calc_rook_attacks(_pdep_u64(board, mask[sq]), sq);
@@ -118,7 +121,7 @@ lut_calc_bishop_attacks(bitboard occ, square sq)
 
 #define LUT_CALC_BISHOP_ATTACKS_DIR(dir) do \
   { \
-    bishop = 1 << sq; \
+    bishop = (1ull << sq); \
     while (bishop) \
     { \
       bishop = dir(bishop); \
@@ -152,15 +155,16 @@ lut_fill_bishop_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES]
 
     // generate mask
     mask[sq] = 0;
-    for (board = 1 << sq; board; board = noea(board), mask[sq] |= board);
-    for (board = 1 << sq; board; board = soea(board), mask[sq] |= board);
-    for (board = 1 << sq; board; board = nowe(board), mask[sq] |= board);
-    for (board = 1 << sq; board; board = sowe(board), mask[sq] |= board);
+    for (board = (1ull << sq); board; board = noea(board), mask[sq] |= board);
+    for (board = (1ull << sq); board; board = soea(board), mask[sq] |= board);
+    for (board = (1ull << sq); board; board = nowe(board), mask[sq] |= board);
+    for (board = (1ull << sq); board; board = sowe(board), mask[sq] |= board);
+    mask[sq] &= no_edges;
 
     // GCC
-    num_entries = __builtin_popcount(mask[sq]);
+    num_entries = __builtin_popcountll(mask[sq]);
 
-    for (board = 0; board < (1u << num_entries); ++board)
+    for (board = 0; board < (1ull << num_entries); ++board)
     {
       // X86
       lut[current_offset++] = lut_calc_bishop_attacks(_pdep_u64(board, mask[sq]), sq);
@@ -180,7 +184,7 @@ lut_fill_king_attacks(bitboard lut[NUM_SQUARES])
 
   for (sq = a1; sq < NUM_SQUARES; ++sq)
   {
-    king = (1 << sq);
+    king = (1ull << sq);
     lut[sq] = 0;
     lut[sq] |= no(king);
     lut[sq] |= so(king);

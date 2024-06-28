@@ -3,8 +3,8 @@
 
 #include <schess/types.h>
 
-#define LUT_BISHOP_SIZE 2290
-#define LUT_ROOK_SIZE 65536
+#define LUT_BISHOP_SIZE 5248
+#define LUT_ROOK_SIZE 102400
 
 void lut_gen_knight(bitboard lut[NUM_SQUARES]);
 void lut_gen_king  (bitboard lut[NUM_SQUARES]);
