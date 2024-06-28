@@ -9,7 +9,7 @@ BIN := $(TARGET_DIR)/schess
 LUT := knightLUT.bin kingLUT.bin bishop_rookLUT.bin bishop_mask.bin rook_mask.bin bishop_offset.bin rook_offset.bin
 LUT := $(addprefix $(LUT_DIR)/, $(LUT))
 LUT_GEN := $(TARGET_DIR)/genLUTs
-LUT_SRC := $(SRC_DIR)/lut_gen/lut.c
+LUT_SRC := $(SRC_DIR)/lut.c
 
 CFLAGS := -Wall -Wextra -O3 -I.
 CFLAGS += -mbmi2
@@ -22,6 +22,7 @@ run: all
 	$(BIN)
 
 debug: CFLAGS := $(filter-out -O3, $(CFLAGS))
+debug: CFLAGS += -ggdb
 debug: $(BIN)
 
 $(LUT): $(LUT_GEN) | $(LUT_DIR)
