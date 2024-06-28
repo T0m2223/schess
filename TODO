@@ -8,14 +8,14 @@ Reps:
 
 
 Move Gen:
-[ ] - Pseudo-legal
+[x] - Pseudo-legal
 [x] - Bitboard shifts for sliding
 [x] - LUTs for everything
 [x] - sliding moves
 [x] - king, knight
-[ ] - pawn
+[x] - pawn
 [ ] - castling: check for checks on king and on +-1 next to him (rook attack vertically + horziontally for other castling direction; 2 diags for bishop ray (always || PT_WBQ); knight and pawn check: bitboard mask & knight/pawn bb) https://www.chessprogramming.org/Square_Attacked_By
-[ ] - ^ also: maybe just use queen LUT for rook and bishop and test and knight LUT for knight testing ;) (genius)
+[x] - ^ also: maybe just use queen LUT for rook and bishop and test and knight LUT for knight testing ;) (genius)
 
 
 Search:
@@ -38,6 +38,8 @@ Cleaness:
 [ ] - make portable (// LINUX // X86 // GCC comments)
 [ ] - change unsigned to size_t for lut offsets?
 [ ] - maybe replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex EVERYWHERE (also &= ~)
+[ ] - replace (1 << blap) with (1u << blap)
+[ ] - go through all literals (unified writing)
 
 
 TOTEST:
