@@ -195,7 +195,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   {
     to = pop_bit(&singles);
     from = to - 0x8;
-    if (to & ~rank_8) // no promotion
+    if (sq2bb(to) & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
     }
@@ -214,7 +214,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   {
     to = pop_bit(&east_captures);
     from = to - 0x9;
-    if (to & ~rank_8) // no promotion
+    if (sq2bb(to) & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
     }
@@ -227,7 +227,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   {
     to = pop_bit(&west_captures);
     from = to - 0x7;
-    if (to & ~rank_8) // no promotion
+    if (sq2bb(to) & ~rank_8) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
     }
@@ -267,8 +267,8 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (singles)
   {
     to = pop_bit(&singles);
-    from = to - 0x8;
-    if (to & ~rank_1) // no promotion
+    from = to + 0x8;
+    if (sq2bb(to) & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, PT_NONE, MT_NORMAL, out);
     }
@@ -280,14 +280,14 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (doubles)
   {
     to = pop_bit(&doubles);
-    from = to - 0x10;
+    from = to + 0x10;
     move_buffer_append_move(from, to, PT_NONE, MT_DOUBLE_PAWN, out);
   }
   while (east_captures)
   {
     to = pop_bit(&east_captures);
-    from = to - 0x7;
-    if (to & ~rank_1) // no promotion
+    from = to + 0x7;
+    if (sq2bb(to) & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
     }
@@ -299,8 +299,8 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   while (west_captures)
   {
     to = pop_bit(&west_captures);
-    from = to - 0x9;
-    if (to & ~rank_1) // no promotion
+    from = to + 0x9;
+    if (sq2bb(to) & ~rank_1) // no promotion
     {
       move_buffer_append_move(from, to, types[to], MT_NORMAL, out);
     }
@@ -320,10 +320,13 @@ generate_moves(board_state *board, irreversable_state meta, piece_type color_own
   bitboard own_union = own[PR_P] | own[PR_N] | own[PR_B] | own[PR_R] | own[PR_Q] | own[PR_K];
   bitboard other_union = other[PR_P] | other[PR_N] | other[PR_B] | other[PR_R] | other[PR_Q] | other[PR_K];
 
+// TODO:
+  bitboard copy;
 #define GENERATE_ALL_MOVES(PT, own, other, pieces, types, out) \
-  while (pieces) \
+  copy = pieces; \
+  while (copy) \
   { \
-    square from = pop_bit(&pieces); \
+    square from = pop_bit(&copy); \
     generate_## PT ##_moves(own, other, from, types, out); \
   }
 
