@@ -1,6 +1,9 @@
 #ifndef SCHESS_TYPES_H
 #define SCHESS_TYPES_H
+
 #include <stdint.h>
+
+const int oo = INTMAX_MAX;
 
 /* BOARD STATE */
 typedef uint64_t bitboard;
@@ -59,8 +62,16 @@ typedef struct
 {
   unsigned halfmove_clock;
   bitboard castling_rights;
-  bitboard en_passant_potential;
 } irreversable_state;
+
+
+/* GAME STATE */
+typedef struct
+{
+  board_state board;
+  bitboard en_passant_potential;
+  piece_type active;
+} game_state;
 
 
 #endif // SCHESS_TYPES_H
