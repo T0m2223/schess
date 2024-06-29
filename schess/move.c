@@ -1,19 +1,20 @@
 #include <schess/move.h>
 
-static inline bitboard
-bitboard_set(bitboard b, square sq) { return b | sq2bb(sq); }
+static inline void
+bitboard_set(square sq, bitboard *b) { *b |= sq2bb(sq); }
 
-static inline bitboard
-bitboard_unset(bitboard b, square sq) { return b & ~sq2bb(sq); }
+static inline void
+bitboard_unset(square sq, bitboard *b) { *b &= ~sq2bb(sq); }
 
 
 // TODO: move to eval.c
 int
 eval_piece_value(piece_type type)
 {
-  const int piece_values[13] = { 0, 1, 3, 3, 5, 9, 100, -1, -3, -3, -5, -9, -100 };
+  const int piece_values[PT_COUNT] = { 0, 1, 3, 3, 5, 9, 100, -1, -3, -3, -5, -9, -100 };
   return piece_values[type];
 };
+
 
 int
 move_make(move *m, board_state *board, irreversable_state *meta)
@@ -25,8 +26,8 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   value = eval_piece_value(capture);
 
   // clear board
-  bitboard_unset(board->bitboards[piece], m->from);
-  bitboard_unset(board->bitboards[capture], m->to);
+  bitboard_unset(m->from, &board->bitboards[piece]);
+  bitboard_unset(m->to, &board->bitboards[capture]);
   board->types[m->from] = PT_NONE;
 
   if (capture != PT_NONE) meta->halfmove_clock = 0;
@@ -39,18 +40,18 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
     break;
   case MT_DOUBLE_PAWN:
-    meta->en_passant_potential = sq2bb(m->to) & 0x0000FF0000FF0000;
+    meta->en_passant_potential = sq2bb(m->to) & 0x000000FFFF000000;
     meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:
     if (piece == PT_WP)
     {
-      bitboard_unset(board->bitboards[PT_BP], m->to + 8);
+      bitboard_unset(m->to + 8, &board->bitboards[PT_BP]);
       value += eval_piece_value(PT_BP);
     }
     else // piece = PT_BP
     {
-      bitboard_unset(board->bitboards[PT_WP], m->to - 8);
+      bitboard_unset(m->to - 8, &board->bitboards[PT_WP]);
       value += eval_piece_value(PT_WP);
     }
     meta->halfmove_clock = 0;
@@ -58,19 +59,19 @@ move_make(move *m, board_state *board, irreversable_state *meta)
 
   case MT_CASTLE_KING:
     castle_rook = piece + (PR_R - PR_K);
-    bitboard_unset(board->bitboards[castle_rook], m->from | 0x3);
-    bitboard_set(board->bitboards[castle_rook], m->to - 1);
+    bitboard_unset(m->from | 0x3, &board->bitboards[castle_rook]);
+    bitboard_set(m->to - 1, &board->bitboards[castle_rook]);
     break;
   case MT_CASTLE_QUEEN:
     castle_rook = piece + (PR_R - PR_K);
-    bitboard_unset(board->bitboards[castle_rook], m->from & ~0x3);
-    bitboard_set(board->bitboards[castle_rook], m->to + 1);
+    bitboard_unset(m->from & ~0x3, &board->bitboards[castle_rook]);
+    bitboard_set(m->to + 1, &board->bitboards[castle_rook]);
     break;
 
 #define MOVE_MAKE_HANDLE_PROMOTION(rel_type) \
     { \
       promo_type = piece + (rel_type - PR_P); \
-      bitboard_set(board->bitboards[promo_type], m->to); \
+      bitboard_set(m->to, &board->bitboards[promo_type]); \
       value += eval_piece_value(promo_type) - eval_piece_value(piece); \
       meta->halfmove_clock = 0; \
       piece = promo_type; \
@@ -105,7 +106,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
   }
 
   // set board
-  bitboard_set(board->bitboards[piece], m->to);
+  bitboard_set(m->to, &board->bitboards[piece]);
   board->types[m->to] = piece;
 
   return value;
@@ -121,8 +122,8 @@ move_unmake(move *m, board_state *board)
 
   value = eval_piece_value(capture);
 
-  bitboard_unset(board->bitboards[piece], m->to);
-  bitboard_set(board->bitboards[capture], m->to);
+  bitboard_unset(m->to, &board->bitboards[piece]);
+  bitboard_set(m->to, &board->bitboards[capture]);
   board->types[m->to] = capture;
 
   piece_type prepromo_type, castle_rook;
@@ -135,31 +136,31 @@ move_unmake(move *m, board_state *board)
   case MT_EN_PASSANT:
     if (piece == PT_WP)
     {
-      bitboard_set(board->bitboards[PT_BP], m->to + 8);
+      bitboard_set(m->to + 8, &board->bitboards[PT_BP]);
       value += eval_piece_value(PT_BP);
     }
     else // piece = PT_BP
     {
-      bitboard_set(board->bitboards[PT_WP], m->to - 8);
+      bitboard_set(m->to - 8, &board->bitboards[PT_WP]);
       value += eval_piece_value(PT_WP);
     }
     break;
 
   case MT_CASTLE_KING:
     castle_rook = piece + (PR_R - PR_K);
-    bitboard_unset(board->bitboards[castle_rook], m->to - 1);
-    bitboard_set(board->bitboards[castle_rook], m->from | 0x3); // TODO: probably wrong
+    bitboard_unset(m->to - 1, &board->bitboards[castle_rook]);
+    bitboard_set(m->from | 0x3, &board->bitboards[castle_rook]); // TODO: probably wrong
     break;
   case MT_CASTLE_QUEEN:
     castle_rook = piece + (PR_R - PR_K);
-    bitboard_unset(board->bitboards[castle_rook], m->to + 1);
-    bitboard_set(board->bitboards[castle_rook], m->from & ~0x3); // TODO: probably wrong
+    bitboard_unset(m->to + 1, &board->bitboards[castle_rook]);
+    bitboard_set(m->from & ~0x3, &board->bitboards[castle_rook]); // TODO: probably wrong
     break;
 
 #define MOVE_UNMAKE_HANDLE_PROMOTION(rel_type) \
     { \
       prepromo_type = piece + (PR_P - rel_type); \
-      bitboard_unset(board->bitboards[piece], m->to); \
+      bitboard_unset(m->to, &board->bitboards[piece]); \
       value += eval_piece_value(prepromo_type) - eval_piece_value(piece); \
       piece = prepromo_type; \
     }
@@ -170,7 +171,7 @@ move_unmake(move *m, board_state *board)
 #undef MOVE_UNMAKE_HANDLE_PROMOTION
   }
 
-  bitboard_set(board->bitboards[piece], m->from);
+  bitboard_set(m->from, &board->bitboards[piece]);
   board->types[m->from] = piece;
 
   return -value;
