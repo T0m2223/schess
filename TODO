@@ -19,7 +19,7 @@ Move Gen:
 
 
 Search:
-[ ] - Alpha-Beta pruning
+[ ] - Alpha-Beta pruning (negamax; fail soft)
 [ ] - Transposition Table
 [ ] - Iterative Deepening
 [ ] - Aspiration Windows
@@ -36,7 +36,7 @@ Eval:
 
 Cleaness:
 [ ] - make portable (// LINUX // X86 // GCC comments)
-[ ] - change unsigned to size_t for lut offsets?
+[x] - change unsigned to size_t for lut offsets?
 [ ] - maybe replace &~literal with -; read: https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks#Squares_and_Bitindex EVERYWHERE (also &= ~)
 [x] - replace (1 << blap) with (1ull << blap)
 [ ] - go through all literals (unified writing)
