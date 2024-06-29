@@ -166,7 +166,7 @@ move_buffer_append_promotions(square from, square to, piece_type capture, struct
 }
 
 static inline void
-generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_type types[NUM_SQUARES], irreversable_state meta, struct move_buffer *out)
+generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_type types[NUM_SQUARES], bitboard en_passant_potential, struct move_buffer *out)
 {
   bitboard occ = own | other,
            singles = (pieces  << 0x8) & ~occ,
@@ -176,18 +176,18 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
 
   square from, to;
 
-  bitboard en_passant_east = (meta.en_passant_potential >> 0x1) & pieces;
+  bitboard en_passant_east = (en_passant_potential >> 0x1) & pieces;
   if (en_passant_east) // en passant east
   {
-    from = log_bit(meta.en_passant_potential >> 0x1);
-    to   = log_bit(meta.en_passant_potential << 0x8);
+    from = log_bit(en_passant_potential >> 0x1);
+    to   = log_bit(en_passant_potential << 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
-  bitboard en_passant_west = (meta.en_passant_potential << 0x1) & pieces;
+  bitboard en_passant_west = (en_passant_potential << 0x1) & pieces;
   if (en_passant_west) // en passant west
   {
-    from = log_bit(meta.en_passant_potential << 0x1);
-    to   = log_bit(meta.en_passant_potential << 0x8);
+    from = log_bit(en_passant_potential << 0x1);
+    to   = log_bit(en_passant_potential << 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
 
@@ -239,7 +239,7 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
 }
 
 static inline void
-generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_type types[NUM_SQUARES], irreversable_state meta, struct move_buffer *out)
+generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_type types[NUM_SQUARES], bitboard en_passant_potential, struct move_buffer *out)
 {
   bitboard occ = own | other,
            singles = (pieces  >> 0x8) & ~occ,
@@ -249,18 +249,18 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
 
   square from, to;
 
-  bitboard en_passant_east = (meta.en_passant_potential >> 0x1) & ~a_file & pieces;
+  bitboard en_passant_east = (en_passant_potential >> 0x1) & ~a_file & pieces;
   if (en_passant_east) // en passant east
   {
-    from = log_bit(meta.en_passant_potential >> 0x1);
-    to   = log_bit(meta.en_passant_potential >> 0x8);
+    from = log_bit(en_passant_potential >> 0x1);
+    to   = log_bit(en_passant_potential >> 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
-  bitboard en_passant_west = (meta.en_passant_potential << 0x1) & ~h_file & pieces;
+  bitboard en_passant_west = (en_passant_potential << 0x1) & ~h_file & pieces;
   if (en_passant_west) // en passant west
   {
-    from = log_bit(meta.en_passant_potential << 0x1);
-    to   = log_bit(meta.en_passant_potential >> 0x8);
+    from = log_bit(en_passant_potential << 0x1);
+    to   = log_bit(en_passant_potential >> 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
 
@@ -313,8 +313,11 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
 
 
 size_t
-generate_moves(board_state *board, irreversable_state meta, piece_type color_own, piece_type color_other, struct move_buffer *out)
+generate_moves(game_state *game, irreversable_state meta, struct move_buffer *out)
 {
+  board_state *board = &game->board;
+  piece_type color_own = game->active,
+             color_other = PT_WP + PT_BP - color_own;
   bitboard *own = board->bitboards + color_own,
            *other = board->bitboards + color_other;
   bitboard own_union = own[PR_P] | own[PR_N] | own[PR_B] | own[PR_R] | own[PR_Q] | own[PR_K];
@@ -343,14 +346,14 @@ generate_moves(board_state *board, irreversable_state meta, piece_type color_own
   bitboard other_pawn_attacks;
   if (color_other + PR_P == PT_BP) // white's move
   {
-    generate_pawn_moves_white(own_union, other_union, board->bitboards[PT_WP], board->types, meta, out);
+    generate_pawn_moves_white(own_union, other_union, board->bitboards[PT_WP], board->types, game->en_passant_potential, out);
     other_pawn_attacks  = (other[PR_P] >> 9) & ~h_file;
     other_pawn_attacks |= (other[PR_P] >> 7) & ~a_file;
     generate_king_moves(own_union, other_union, other, other_pawn_attacks, log_bit(own[PR_K]), board->types, meta, out);
   }
   else // black's move
   {
-    generate_pawn_moves_black(own_union, other_union, board->bitboards[PT_BP], board->types, meta, out);
+    generate_pawn_moves_black(own_union, other_union, board->bitboards[PT_BP], board->types, game->en_passant_potential, out);
     other_pawn_attacks  = (other[PR_P] << 7) & ~h_file;
     other_pawn_attacks |= (other[PR_P] << 9) & ~a_file;
     generate_king_moves(own_union, other_union, other, other_pawn_attacks, log_bit(own[PR_K]), board->types, meta, out);

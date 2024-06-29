@@ -1,5 +1,6 @@
 #ifndef SCHESS_GEN_H
 #define SCHESS_GEN_H
+
 #include <schess/types.h>
 #include <stddef.h>
 
@@ -17,6 +18,6 @@ void
 move_gen_init_LUTs(void);
 
 size_t
-generate_moves(board_state *board, irreversable_state meta, piece_type color_own, piece_type color_other, struct move_buffer *out);
+generate_moves(game_state *game, irreversable_state meta, struct move_buffer *out);
 
 #endif // SCHESS_GEN_H
