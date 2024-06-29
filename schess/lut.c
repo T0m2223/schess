@@ -78,11 +78,12 @@ lut_calc_rook_attacks(bitboard occ, square sq)
   return attacks;
 }
 
-unsigned
-lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES], unsigned initial_offset, bitboard lut[LUT_ROOK_SIZE])
+size_t
+lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], size_t offset[NUM_SQUARES], size_t initial_offset, bitboard lut[LUT_ROOK_SIZE])
 {
   square sq;
-  unsigned file, rank, current_offset, num_entries;
+  unsigned file, rank, num_entries;
+  size_t current_offset;
   bitboard board;
 
   current_offset = initial_offset;
@@ -140,11 +141,12 @@ lut_calc_bishop_attacks(bitboard occ, square sq)
   return attacks;
 }
 
-unsigned
-lut_fill_bishop_attacks(bitboard mask[NUM_SQUARES], unsigned offset[NUM_SQUARES], unsigned initial_offset, bitboard lut[LUT_BISHOP_SIZE])
+size_t
+lut_fill_bishop_attacks(bitboard mask[NUM_SQUARES], size_t offset[NUM_SQUARES], size_t initial_offset, bitboard lut[LUT_BISHOP_SIZE])
 {
   square sq;
-  unsigned current_offset, num_entries;
+  unsigned num_entries;
+  size_t current_offset;
   bitboard board;
 
   current_offset = initial_offset;
@@ -204,9 +206,9 @@ lut_gen_knight(bitboard lut[NUM_SQUARES]) { lut_fill_knight_attacks(lut); }
 void
 lut_gen_king(bitboard lut[NUM_SQUARES]) { lut_fill_king_attacks(lut); }
 void
-lut_gen_bishop_rook(bitboard lut[LUT_BISHOP_SIZE + LUT_ROOK_SIZE], bitboard bishop_mask[NUM_SQUARES], bitboard rook_mask[NUM_SQUARES], unsigned bishop_offset[NUM_SQUARES], unsigned rook_offset[NUM_SQUARES])
+lut_gen_bishop_rook(bitboard lut[LUT_BISHOP_SIZE + LUT_ROOK_SIZE], bitboard bishop_mask[NUM_SQUARES], bitboard rook_mask[NUM_SQUARES], size_t bishop_offset[NUM_SQUARES], size_t rook_offset[NUM_SQUARES])
 {
-  unsigned offset = lut_fill_bishop_attacks(bishop_mask, bishop_offset, 0, lut);
+  size_t offset = lut_fill_bishop_attacks(bishop_mask, bishop_offset, 0, lut);
   lut_fill_rook_attacks(rook_mask, rook_offset, offset, lut);
 }
 
@@ -253,8 +255,8 @@ main(int argc, char **argv)
   LUT_GEN_MAP_FILE(bishop_rook,   argv[3], LUT_BISHOP_SIZE + LUT_ROOK_SIZE, bitboard);
   LUT_GEN_MAP_FILE(bishop_mask,   argv[4], NUM_SQUARES, bitboard);
   LUT_GEN_MAP_FILE(rook_mask,     argv[5], NUM_SQUARES, bitboard);
-  LUT_GEN_MAP_FILE(bishop_offset, argv[6], NUM_SQUARES, unsigned);
-  LUT_GEN_MAP_FILE(rook_offset,   argv[7], NUM_SQUARES, unsigned);
+  LUT_GEN_MAP_FILE(bishop_offset, argv[6], NUM_SQUARES, size_t);
+  LUT_GEN_MAP_FILE(rook_offset,   argv[7], NUM_SQUARES, size_t);
 
 #undef LUT_GEN_MAP_FILE
 
@@ -284,8 +286,8 @@ main(int argc, char **argv)
   LUT_GEN_UNMAP_FILE(bishop_rook,   argv[3], LUT_BISHOP_SIZE + LUT_ROOK_SIZE, bitboard);
   LUT_GEN_UNMAP_FILE(bishop_mask,   argv[4], NUM_SQUARES, bitboard);
   LUT_GEN_UNMAP_FILE(rook_mask,     argv[5], NUM_SQUARES, bitboard);
-  LUT_GEN_UNMAP_FILE(bishop_offset, argv[6], NUM_SQUARES, unsigned);
-  LUT_GEN_UNMAP_FILE(rook_offset,   argv[7], NUM_SQUARES, unsigned);
+  LUT_GEN_UNMAP_FILE(bishop_offset, argv[6], NUM_SQUARES, size_t);
+  LUT_GEN_UNMAP_FILE(rook_offset,   argv[7], NUM_SQUARES, size_t);
 
 #undef LUT_GEN_UNMAP_FILE
 

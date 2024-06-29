@@ -9,7 +9,7 @@
 static bitboard attack_table[LUT_BISHOP_SIZE + LUT_ROOK_SIZE];
 
 static bitboard rook_mask[NUM_SQUARES];
-static unsigned rook_offset[NUM_SQUARES];
+static size_t rook_offset[NUM_SQUARES];
 static inline bitboard
 rook_attacks(bitboard occ, square sq)
 {
@@ -18,7 +18,7 @@ rook_attacks(bitboard occ, square sq)
 }
 
 static bitboard bishop_mask[NUM_SQUARES];
-static unsigned bishop_offset[NUM_SQUARES];
+static size_t bishop_offset[NUM_SQUARES];
 static inline bitboard
 bishop_attacks(bitboard occ, square sq)
 {
@@ -320,7 +320,6 @@ generate_moves(board_state *board, irreversable_state meta, piece_type color_own
   bitboard own_union = own[PR_P] | own[PR_N] | own[PR_B] | own[PR_R] | own[PR_Q] | own[PR_K];
   bitboard other_union = other[PR_P] | other[PR_N] | other[PR_B] | other[PR_R] | other[PR_Q] | other[PR_K];
 
-// TODO:
   bitboard copy;
 #define GENERATE_ALL_MOVES(PT, own, other, pieces, types, out) \
   copy = pieces; \
@@ -329,6 +328,8 @@ generate_moves(board_state *board, irreversable_state meta, piece_type color_own
     square from = pop_bit(&copy); \
     generate_## PT ##_moves(own, other, from, types, out); \
   }
+
+  out->size = 0;
 
   // generate sliding moves
   GENERATE_ALL_MOVES(bishop, own_union, other_union, own[PR_B], board->types, out);
