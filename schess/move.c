@@ -17,9 +17,10 @@ eval_piece_value(piece_type type)
 
 
 int
-move_make(move *m, board_state *board, irreversable_state *meta)
+move_make(move *m, game_state *game, irreversable_state *meta)
 {
   int value;
+  board_state *board = &game->board;
   piece_type piece = board->types[m->from],
   capture = board->types[m->to];
 
@@ -40,7 +41,7 @@ move_make(move *m, board_state *board, irreversable_state *meta)
     if (piece == PT_WP || piece == PT_BP) meta->halfmove_clock = 0;
     break;
   case MT_DOUBLE_PAWN:
-    meta->en_passant_potential = sq2bb(m->to) & 0x000000FFFF000000;
+    game->en_passant_potential = sq2bb(m->to) & 0x000000FFFF000000;
     meta->halfmove_clock = 0;
     break;
   case MT_EN_PASSANT:
@@ -114,9 +115,10 @@ move_make(move *m, board_state *board, irreversable_state *meta)
 
 
 int
-move_unmake(move *m, board_state *board)
+move_unmake(move *m, game_state *game)
 {
   int value;
+  board_state *board = &game->board;
   piece_type piece = board->types[m->to],
   capture = m->capture;
 

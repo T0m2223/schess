@@ -4,9 +4,9 @@
 #include <schess/types.h>
 
 int
-move_make(move *m, board_state *board, irreversable_state *meta);
+move_make(move *m, game_state *game, irreversable_state *meta);
 
 int
-move_unmake(move *m, board_state *board);
+move_unmake(move *m, game_state *game);
 
 #endif // SCHESS_MOVES_H
