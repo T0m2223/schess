@@ -1,8 +1,55 @@
+#include "schess/types.h"
 #include <schess/utils.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
+static const char *move_names[9] =
+{
+  "NORMAL",
+  "DOUBLE_PAWN",
+  "EN_PASSANT",
+  "CASTLE_KING",
+  "CASTLE_QUEEN",
+  "PROMOTION_KNIGHT",
+  "PROMOTION_BISHOP",
+  "PROMOTION_ROOK",
+  "PROMOTION_QUEEN",
+};
+const char *
+move_name(enum MOVE_TYPE mt)
+{
+  return move_names[mt];
+}
+
+static const char *piece_names[PT_COUNT] =
+{
+  "  ",
+  "WP", "WN", "WB", "WR", "WQ", "WK",
+  "BP", "BN", "BB", "BR", "BQ", "BK",
+};
+const char *
+piece_name(piece_type pt)
+{
+  return piece_names[pt];
+}
+
+static const char *square_names[NUM_SQUARES] =
+{
+  "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
+  "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+  "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+  "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+  "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+  "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+  "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+  "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
+};
+const char *
+square_name(square sq)
+{
+  return square_names[sq];
+}
 
 int
 parse_board(const char *board_string, board_state *board)
@@ -67,7 +114,7 @@ parse_board(const char *board_string, board_state *board)
 }
 
 int
-parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
+parse_FEN(const char *FEN, game_state *game, irreversable_state *meta)
 {
   size_t i, section = 0;
   const char *sections[6];
@@ -84,6 +131,19 @@ parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
   if (section != 6) return 1;
 
   memset(meta, 0, sizeof(*meta));
+
+  // ACTIVE
+  game->active = sections[ACTIVE][0] == 'w' ? PT_WP : PT_BP;
+
+  if (sections[EN_PASSANT][0] == '-')
+  {
+    game->en_passant_potential = 0;
+  }
+  else
+  {
+    square sq = ((sections[EN_PASSANT][0] - 'a') * 2) + (sections[EN_PASSANT][1] - '1');
+    game->en_passant_potential = (sq2bb(sq + 8) | sq2bb(sq - 8)) & 0x000000FFFF000000;
+  }
 
   // HALFMOVE_CLOCK
   meta->halfmove_clock = sections[HALFMOVE_CLOCK][0] - '0';
@@ -117,12 +177,10 @@ parse_FEN(const char *FEN, board_state *board, irreversable_state *meta)
     }
   }
 
-  // TODO: EP
-
   // BOARD
   const char *board_string = sections[BOARD];
 
-  return parse_board(board_string, board);
+  return parse_board(board_string, &game->board);
 }
 
 void
@@ -156,4 +214,10 @@ print_moves(board_state *board, struct move_buffer *mbuf)
         square_names[m.from], square_names[m.to],
         piece_names[m.capture], move_names[m.type]);
   }
+}
+
+unsigned
+perft(unsigned depth)
+{
+
 }
