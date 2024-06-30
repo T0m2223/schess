@@ -42,6 +42,7 @@ Cleaness:
 [ ] - go through all literals (unified writing)
 [x] - if } else -> if } \ else
 [ ] - invert depth in search fn?
+[ ] - inline decls in headers (at least unified somehow)
 
 
 TOTEST:
