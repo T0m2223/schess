@@ -1,4 +1,6 @@
-#include "schess/types.h"
+#include <schess/gen.h>
+#include <schess/move.h>
+#include <schess/types.h>
 #include <schess/utils.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -24,9 +26,9 @@ move_name(enum MOVE_TYPE mt)
 
 static const char *piece_names[PT_COUNT] =
 {
-  "  ",
-  "WP", "WN", "WB", "WR", "WQ", "WK",
-  "BP", "BN", "BB", "BR", "BQ", "BK",
+  " ",
+  "P", "N", "B", "R", "Q", "K",
+  "p", "n", "b", "r", "q", "k",
 };
 const char *
 piece_name(piece_type pt)
@@ -190,7 +192,7 @@ print_board(board_state *board)
 
   for (size_t r = 0; r < 8; ++r)
   {
-    printf("+----+----+----+----+----+----+----+----+\n|");
+    printf("+---+---+---+---+---+---+---+---+\n|");
     for (size_t c = 0; c < 8; ++c)
     {
       type = board->types[((7 - r) * 8) + c];
@@ -198,7 +200,7 @@ print_board(board_state *board)
     }
     printf("\n");
   }
-  printf("+----+----+----+----+----+----+----+----+\n");
+  printf("+---+---+---+---+---+---+---+---+\n");
 }
 
 void
@@ -214,10 +216,4 @@ print_moves(board_state *board, struct move_buffer *mbuf)
         square_names[m.from], square_names[m.to],
         piece_names[m.capture], move_names[m.type]);
   }
-}
-
-unsigned
-perft(unsigned depth)
-{
-
 }
