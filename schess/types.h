@@ -1,9 +1,10 @@
 #ifndef SCHESS_TYPES_H
 #define SCHESS_TYPES_H
 
+#include <limits.h>
 #include <stdint.h>
 
-const int oo = INTMAX_MAX;
+#define oo INT_MAX
 
 /* BOARD STATE */
 typedef uint64_t bitboard;
@@ -66,6 +67,7 @@ typedef struct
 
 
 /* GAME STATE */
+#define OTHER_COLOR(color) (PT_WP + PT_BP - (color))
 typedef struct
 {
   board_state board;
