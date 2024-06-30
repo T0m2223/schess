@@ -41,6 +41,7 @@ Cleaness:
 [x] - replace (1 << blap) with (1ull << blap)
 [ ] - go through all literals (unified writing)
 [x] - if } else -> if } \ else
+[ ] - invert depth in search fn?
 
 
 TOTEST:
@@ -48,4 +49,5 @@ TOTEST:
 [ ] - gen moves test separated captures and silents (hardcode PT_NONE)
 [ ] - gen first only generate captures, then silents
 [ ] - gen: separate functions for king move gen (without PR offset)
-[ ] - move make: handle en_passant not in irreversable state, but set whenever pawn moves (removes one &-operation) ; also: if ep and castle are mixed: what happens if king stands next to ep pawn? can he castle?
+[x] - move make: handle en_passant not in irreversable state, but set whenever pawn moves (removes one &-operation) ; also: if ep and castle are mixed: what happens if king stands next to ep pawn? can he castle?
+[ ] - PERFT: requires legal moves (maybe only filter while perfting)
