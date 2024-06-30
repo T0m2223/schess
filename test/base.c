@@ -17,6 +17,7 @@ typedef struct group_ll
 {
   const char *name;
   test_ll *tests;
+  size_t count;
   struct group_ll *next;
 } group_ll;
 
@@ -54,6 +55,7 @@ group_append_test(const char *group, const char *name, int (*fn)(void))
     group_head->name = group;
     group_head->next = NULL;
     group_head->tests = NULL;
+    group_head->count = 1;
     test_ll_append_test(&group_head->tests, name, fn);
     return;
   }
@@ -63,6 +65,7 @@ group_append_test(const char *group, const char *name, int (*fn)(void))
     if (!strcmp(current->name, group))
     {
       test_ll_append_test(&current->tests, name, fn);
+      ++current->count;
       return;
     }
     last = current;
@@ -73,6 +76,7 @@ group_append_test(const char *group, const char *name, int (*fn)(void))
   last->name = group;
   last->next = NULL;
   last->tests = NULL;
+  last->count = 1;
   test_ll_append_test(&group_head->tests, name, fn);
 }
 
@@ -90,16 +94,20 @@ main(void)
   test_ll *current_test;
 
   size_t num_tests, failures;
+  size_t ran;
   int res;
 
   for (current_group = group_head; current_group; current_group = current_group->next)
   {
-    num_tests = failures = 0;
+    ran = num_tests = failures = 0;
     printf("Running tests from %s:\n", current_group->name);
-    for (current_test = current_group->tests; current_test; current_test = current_test->next)
+    for (current_test = current_group->tests; current_test; current_test = current_test->next, ++ran)
     {
+      printf("=> Progress: (%zu/%zu)", ran, current_group->count);
+      fflush(stdout);
       ++num_tests;
       res = current_test->fn();
+      printf("\r");
       if (!res) continue;
 
       ++failures;
