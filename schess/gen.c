@@ -106,7 +106,7 @@ generate_knight_moves(bitboard own, bitboard other, square sq, piece_type types[
   move_buffer_append_attacks(attacks, sq, types, out);
 }
 
-// Does not check for 'checked by enemy king'
+static bitboard king_attacks[NUM_SQUARES];
 static inline int
 is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq)
 {
@@ -118,10 +118,13 @@ is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboa
   attacker |= knight_attacks[sq]      & (other_pieces[PR_N]);
   attacker |= other_pawn_attacks      & sq2bb(sq);
 
+  // Optional for pseudo-legal
+  attacker |= king_attacks[sq]        & (other_pieces[PR_K]);
+
   return attacker != 0;
 }
 
-static bitboard king_attacks[NUM_SQUARES];
+
 static inline void
 generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitboard other_pawn_attacks, square sq, piece_type types[NUM_SQUARES], irreversable_state meta, struct move_buffer *out)
 {
@@ -171,19 +174,19 @@ generate_pawn_moves_white(bitboard own, bitboard other, bitboard pieces, piece_t
   bitboard occ = own | other,
            singles = (pieces  << 0x8) & ~occ,
            doubles = (singles << 0x8) & ~occ & rank_4,
-           east_captures = (singles << 0x1) & ~a_file & other,
-           west_captures = (singles >> 0x1) & ~h_file & other;
+           east_captures = (pieces << 0x9) & ~a_file & other,
+           west_captures = (pieces << 0x7) & ~h_file & other;
 
   square from, to;
 
-  bitboard en_passant_east = (en_passant_potential >> 0x1) & pieces;
+  bitboard en_passant_east = (en_passant_potential >> 0x1) & ~h_file & pieces;
   if (en_passant_east) // en passant east
   {
     from = log_bit(en_passant_potential >> 0x1);
     to   = log_bit(en_passant_potential << 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
-  bitboard en_passant_west = (en_passant_potential << 0x1) & pieces;
+  bitboard en_passant_west = (en_passant_potential << 0x1) & ~a_file & pieces;
   if (en_passant_west) // en passant west
   {
     from = log_bit(en_passant_potential << 0x1);
@@ -244,19 +247,19 @@ generate_pawn_moves_black(bitboard own, bitboard other, bitboard pieces, piece_t
   bitboard occ = own | other,
            singles = (pieces  >> 0x8) & ~occ,
            doubles = (singles >> 0x8) & ~occ & rank_5,
-           east_captures = (singles << 0x1) & ~a_file & other,
-           west_captures = (singles >> 0x1) & ~h_file & other;
+           east_captures = (pieces >> 0x7) & ~a_file & other,
+           west_captures = (pieces >> 0x9) & ~h_file & other;
 
   square from, to;
 
-  bitboard en_passant_east = (en_passant_potential >> 0x1) & ~a_file & pieces;
+  bitboard en_passant_east = (en_passant_potential >> 0x1) & ~h_file & pieces;
   if (en_passant_east) // en passant east
   {
     from = log_bit(en_passant_potential >> 0x1);
     to   = log_bit(en_passant_potential >> 0x8);
     move_buffer_append_move(from, to, PT_NONE, MT_EN_PASSANT, out);
   }
-  bitboard en_passant_west = (en_passant_potential << 0x1) & ~h_file & pieces;
+  bitboard en_passant_west = (en_passant_potential << 0x1) & ~a_file & pieces;
   if (en_passant_west) // en passant west
   {
     from = log_bit(en_passant_potential << 0x1);
@@ -317,7 +320,7 @@ generate_moves(game_state *game, irreversable_state meta, struct move_buffer *ou
 {
   board_state *board = &game->board;
   piece_type color_own = game->active,
-             color_other = PT_WP + PT_BP - color_own;
+             color_other = OTHER_COLOR(color_own);
   bitboard *own = board->bitboards + color_own,
            *other = board->bitboards + color_other;
   bitboard own_union = own[PR_P] | own[PR_N] | own[PR_B] | own[PR_R] | own[PR_Q] | own[PR_K];
@@ -349,6 +352,7 @@ generate_moves(game_state *game, irreversable_state meta, struct move_buffer *ou
     generate_pawn_moves_white(own_union, other_union, board->bitboards[PT_WP], board->types, game->en_passant_potential, out);
     other_pawn_attacks  = (other[PR_P] >> 9) & ~h_file;
     other_pawn_attacks |= (other[PR_P] >> 7) & ~a_file;
+    // TODO: may fail if king dead
     generate_king_moves(own_union, other_union, other, other_pawn_attacks, log_bit(own[PR_K]), board->types, meta, out);
   }
   else // black's move
@@ -374,4 +378,22 @@ move_gen_init_LUTs(void)
   lut_gen_knight(knight_attacks);
   lut_gen_bishop_rook(attack_table, bishop_mask, rook_mask, bishop_offset, rook_offset);
   lut_gen_king(king_attacks);
+}
+
+int
+is_board_legal(board_state *board, piece_type active)
+{
+  bitboard wocc = board->bitboards[PT_WP] | board->bitboards[PT_WN] | board->bitboards[PT_WB] | board->bitboards[PT_WR] | board->bitboards[PT_WQ] | board->bitboards[PT_WK];
+  bitboard bocc = board->bitboards[PT_BP] | board->bitboards[PT_BN] | board->bitboards[PT_BB] | board->bitboards[PT_BR] | board->bitboards[PT_BQ] | board->bitboards[PT_BK];
+  bitboard wpawn_attacks, bpawn_attacks;
+
+  wpawn_attacks  = (board->bitboards[PT_WP] << 9) & ~a_file;
+  wpawn_attacks |= (board->bitboards[PT_WP] << 7) & ~h_file;
+  bpawn_attacks  = (board->bitboards[PT_BP] >> 9) & ~h_file;
+  bpawn_attacks |= (board->bitboards[PT_BP] >> 7) & ~a_file;
+
+  if (active == PT_BP && is_square_checked(wocc, bocc, &board->bitboards[PT_BP], bpawn_attacks, log_bit(board->bitboards[PT_WK]))) return 0;
+  if (active == PT_WP && is_square_checked(bocc, wocc, &board->bitboards[PT_WP], wpawn_attacks, log_bit(board->bitboards[PT_BK]))) return 0;
+
+  return 1;
 }
