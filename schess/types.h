@@ -80,6 +80,7 @@ typedef struct
   board_state board;
   bitboard en_passant_potential;
   color active;
+  unsigned fullmove;
 } game_state;
 
 
