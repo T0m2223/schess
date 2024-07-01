@@ -56,6 +56,7 @@ enum MOVE_TYPE
   MT_PROMOTION_BISHOP,
   MT_PROMOTION_ROOK,
   MT_PROMOTION_QUEEN,
+  MT_NULL,
 };
 typedef struct
 {
