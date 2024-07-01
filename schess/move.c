@@ -1,3 +1,4 @@
+#include <schess/eval.h>
 #include <schess/move.h>
 
 static inline void
@@ -5,15 +6,6 @@ bitboard_set(square sq, bitboard *b) { *b |= sq2bb(sq); }
 
 static inline void
 bitboard_unset(square sq, bitboard *b) { *b &= ~sq2bb(sq); }
-
-
-// TODO: move to eval.c
-int
-eval_piece_value(piece_type type)
-{
-  const int piece_values[PT_COUNT] = { 0, 1, 3, 3, 5, 9, 100, -1, -3, -3, -5, -9, -100 };
-  return piece_values[type];
-};
 
 
 int
