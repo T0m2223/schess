@@ -319,8 +319,8 @@ size_t
 generate_moves(game_state *game, irreversable_state meta, struct move_buffer *out)
 {
   board_state *board = &game->board;
-  piece_type color_own = game->active,
-             color_other = OTHER_COLOR(color_own);
+  color color_own = game->active,
+        color_other = OTHER_COLOR(color_own);
   bitboard *own = board->bitboards + color_own,
            *other = board->bitboards + color_other;
   bitboard own_union = own[PR_P] | own[PR_N] | own[PR_B] | own[PR_R] | own[PR_Q] | own[PR_K];
@@ -347,7 +347,7 @@ generate_moves(game_state *game, irreversable_state meta, struct move_buffer *ou
 #undef GENERATE_ALL_MOVES
 
   bitboard other_pawn_attacks;
-  if (color_other + PR_P == PT_BP) // white's move
+  if (color_own == COLOR_WHITE) // white's move
   {
     generate_pawn_moves_white(own_union, other_union, board->bitboards[PT_WP], board->types, game->en_passant_potential, out);
     other_pawn_attacks  = (other[PR_P] >> 9) & ~h_file;
@@ -381,7 +381,7 @@ move_gen_init_LUTs(void)
 }
 
 int
-is_board_legal(board_state *board, piece_type active)
+is_board_legal(board_state *board, color active)
 {
   bitboard wocc = board->bitboards[PT_WP] | board->bitboards[PT_WN] | board->bitboards[PT_WB] | board->bitboards[PT_WR] | board->bitboards[PT_WQ] | board->bitboards[PT_WK];
   bitboard bocc = board->bitboards[PT_BP] | board->bitboards[PT_BN] | board->bitboards[PT_BB] | board->bitboards[PT_BR] | board->bitboards[PT_BQ] | board->bitboards[PT_BK];
@@ -392,8 +392,8 @@ is_board_legal(board_state *board, piece_type active)
   bpawn_attacks  = (board->bitboards[PT_BP] >> 9) & ~h_file;
   bpawn_attacks |= (board->bitboards[PT_BP] >> 7) & ~a_file;
 
-  if (active == PT_BP && is_square_checked(wocc, bocc, &board->bitboards[PT_BP], bpawn_attacks, log_bit(board->bitboards[PT_WK]))) return 0;
-  if (active == PT_WP && is_square_checked(bocc, wocc, &board->bitboards[PT_WP], wpawn_attacks, log_bit(board->bitboards[PT_BK]))) return 0;
+  if (active == COLOR_BLACK && is_square_checked(wocc, bocc, &board->bitboards[PT_BP], bpawn_attacks, log_bit(board->bitboards[PT_WK]))) return 0;
+  if (active == COLOR_WHITE && is_square_checked(bocc, wocc, &board->bitboards[PT_WP], wpawn_attacks, log_bit(board->bitboards[PT_BK]))) return 0;
 
   return 1;
 }

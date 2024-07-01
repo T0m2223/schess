@@ -135,7 +135,7 @@ parse_FEN(const char *FEN, game_state *game, irreversable_state *meta)
   memset(meta, 0, sizeof(*meta));
 
   // ACTIVE
-  game->active = sections[ACTIVE][0] == 'w' ? PT_WP : PT_BP;
+  game->active = sections[ACTIVE][0] == 'w' ? COLOR_WHITE : COLOR_BLACK;
 
   if (sections[EN_PASSANT][0] == '-')
   {

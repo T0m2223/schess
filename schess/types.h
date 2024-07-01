@@ -6,6 +6,21 @@
 
 #define oo INT_MAX
 
+enum PIECE_REL { PR_P, PR_N, PR_B, PR_R, PR_Q, PR_K };
+typedef enum
+{
+  PT_NONE,
+  PT_WP, PT_WN, PT_WB, PT_WR, PT_WQ, PT_WK,
+  PT_BP, PT_BN, PT_BB, PT_BR, PT_BQ, PT_BK,
+  PT_COUNT
+} piece_type;
+#define OTHER_COLOR(color) (COLOR_WHITE + COLOR_BLACK - (color))
+typedef enum
+{
+  COLOR_WHITE = PT_WP - PR_P,
+  COLOR_BLACK = PT_BP - PR_P,
+} color;
+
 /* BOARD STATE */
 typedef uint64_t bitboard;
 typedef enum
@@ -19,14 +34,6 @@ typedef enum
   a7, b7, c7, d7, e7, f7, g7, h7,
   a8, b8, c8, d8, e8, f8, g8, h8, NUM_SQUARES
 } square;
-enum PIECE_REL { PR_P, PR_N, PR_B, PR_R, PR_Q, PR_K };
-typedef enum
-{
-  PT_NONE,
-  PT_WP, PT_WN, PT_WB, PT_WR, PT_WQ, PT_WK,
-  PT_BP, PT_BN, PT_BB, PT_BR, PT_BQ, PT_BK,
-  PT_COUNT
-} piece_type;
 typedef struct
 {
   bitboard bitboards[PT_COUNT];
@@ -67,12 +74,11 @@ typedef struct
 
 
 /* GAME STATE */
-#define OTHER_COLOR(color) (PT_WP + PT_BP - (color))
 typedef struct
 {
   board_state board;
   bitboard en_passant_potential;
-  piece_type active;
+  color active;
 } game_state;
 
 

@@ -17,6 +17,6 @@ void move_gen_init_LUTs(void);
 
 size_t generate_moves(game_state *game, irreversable_state meta, struct move_buffer *out);
 
-int is_board_legal(board_state *board, piece_type active);
+int is_board_legal(board_state *board, color active);
 
 #endif // SCHESS_GEN_H
