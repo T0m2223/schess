@@ -41,7 +41,7 @@ Cleaness:
 [x] - replace (1 << blap) with (1ull << blap)
 [ ] - go through all literals (unified writing)
 [x] - if } else -> if } \ else
-[ ] - invert depth in search fn?
+[x] - invert depth in search fn?
 [ ] - inline decls in headers (at least unified somehow)
 
 
