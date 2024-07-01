@@ -394,8 +394,11 @@ is_board_legal(board_state *board, color active)
   bpawn_attacks  = (board->bitboards[PT_BP] >> 9) & ~h_file;
   bpawn_attacks |= (board->bitboards[PT_BP] >> 7) & ~a_file;
 
-  if (active == COLOR_BLACK && is_square_checked(wocc, bocc, &board->bitboards[PT_BP], bpawn_attacks, log_bit(board->bitboards[PT_WK]))) return 0;
-  if (active == COLOR_WHITE && is_square_checked(bocc, wocc, &board->bitboards[PT_WP], wpawn_attacks, log_bit(board->bitboards[PT_BK]))) return 0;
-
-  return 1;
+  switch (active)
+  {
+  case COLOR_WHITE:
+    return !is_square_checked(bocc, wocc, &board->bitboards[COLOR_BLACK], wpawn_attacks, log_bit(board->bitboards[PT_BK]));
+  case COLOR_BLACK:
+    return !is_square_checked(wocc, bocc, &board->bitboards[COLOR_WHITE], bpawn_attacks, log_bit(board->bitboards[PT_WK]));
+  }
 }
