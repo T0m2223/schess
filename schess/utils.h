@@ -17,4 +17,6 @@ void print_board(board_state *board);
 void print_moves(board_state *board, struct move_buffer *mbuf);
 void print_move(board_state *board, move m);
 
+int SAN_to_squares(const char *SAN, game_state *game, square *from_out, square *to_out, piece_type *promotion);
+
 #endif // SCHESS_UTILS_H

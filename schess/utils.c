@@ -213,14 +213,98 @@ print_moves(board_state *board, struct move_buffer *mbuf)
     move m = mbuf->moves[i];
     printf("[%3zu]:  ", i);
     print_move(board, m);
+    printf("\n");
   }
 }
 
 void
 print_move(board_state *board, move m)
 {
-  printf("(%s) %s -> %s (%s)  | %s\n",
+  printf("(%s) %s -> %s (%s)  | %s",
       piece_names[board->types[m.from]],
       square_names[m.from], square_names[m.to],
       piece_names[m.capture], move_names[m.type]);
+}
+
+static enum PIECE_REL
+piece_from_symbol(const char name)
+{
+  switch (name) {
+  case 'N': return PR_N;
+  case 'B': return PR_B;
+  case 'R': return PR_R;
+  case 'Q': return PR_Q;
+  case 'K': return PR_K;
+  }
+  return PR_P;
+}
+
+static square
+square_from_name(const char file, const char rank)
+{
+  return ((file - 'a') * 8) + (rank - '1');
+}
+
+int
+SAN_to_squares(const char *SAN, game_state *game, square *from_out, square *to_out, piece_type *promotion)
+{
+  square sq1;
+  size_t len = strlen(SAN);
+  *promotion = PT_NONE;
+  color active = game->active;
+
+  if (len < 2) return 1;
+
+  if (len == 2) // pawn push
+  {
+    *to_out = square_from_name(SAN[0], SAN[1]);
+    switch (active)
+    {
+    case COLOR_WHITE:
+      if (game->board.types[*to_out - 8] == PT_WP)
+      {
+        *from_out = *to_out - 8;
+        return 0;
+      }
+      if (*to_out >= 16 && game->board.types[*to_out - 16] == PT_WP)
+      {
+        *from_out = *to_out - 16;
+        return 0;
+      }
+      return 1;
+    case COLOR_BLACK:
+      if (game->board.types[*to_out + 8] == PT_BP)
+      {
+        *from_out = *to_out + 8;
+        return 0;
+      }
+      if (*to_out < 48 && game->board.types[*to_out + 16] == PT_BP)
+      {
+        *from_out = *to_out + 16;
+        return 0;
+      }
+      return 1;
+    }
+  }
+
+  if (len == 3 && SAN[0] >= 'a') // promotion push
+  {
+
+  }
+
+  if (SAN[0] >= 'a') // pawn move
+  {
+    if (SAN[1] == 'x') // disambiguious pawn capture
+    {
+      if (len < 4) return 1;
+      *to_out = square_from_name(SAN[2], SAN[3]);
+
+      if (len >= 5)
+        *promotion = game->active + piece_from_symbol(SAN[4]);
+
+      return 0;
+    }
+
+  }
+
 }
