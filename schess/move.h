@@ -3,10 +3,10 @@
 
 #include <schess/types.h>
 
-int
+void
 move_make(move *m, game_state *game, irreversable_state *meta);
 
-int
+void
 move_unmake(move *m, game_state *game);
 
 #endif // SCHESS_MOVES_H

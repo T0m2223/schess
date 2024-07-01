@@ -8,15 +8,12 @@ static inline void
 bitboard_unset(square sq, bitboard *b) { *b &= ~sq2bb(sq); }
 
 
-int
+void
 move_make(move *m, game_state *game, irreversable_state *meta)
 {
-  int value;
   board_state *board = &game->board;
   piece_type piece = board->types[m->from],
   capture = board->types[m->to];
-
-  value = eval_piece_value(capture);
 
   // clear board
   bitboard_unset(m->from, &board->bitboards[piece]);
@@ -43,13 +40,11 @@ move_make(move *m, game_state *game, irreversable_state *meta)
     {
       bitboard_unset(m->to - 8, &board->bitboards[PT_BP]);
       board->types[m->to - 8] = PT_NONE;
-      value += eval_piece_value(PT_BP);
     }
     else // piece = PT_BP
     {
       bitboard_unset(m->to + 8, &board->bitboards[PT_WP]);
       board->types[m->to + 8] = PT_NONE;
-      value += eval_piece_value(PT_WP);
     }
     meta->halfmove_clock = 0;
     break;
@@ -72,7 +67,6 @@ move_make(move *m, game_state *game, irreversable_state *meta)
 #define MOVE_MAKE_HANDLE_PROMOTION(rel_type) \
     { \
       promo_type = piece + (rel_type - PR_P); \
-      value += eval_piece_value(promo_type) - eval_piece_value(piece); \
       meta->halfmove_clock = 0; \
       piece = promo_type; \
     }
@@ -81,6 +75,8 @@ move_make(move *m, game_state *game, irreversable_state *meta)
   case MT_PROMOTION_ROOK: MOVE_MAKE_HANDLE_PROMOTION(PR_R); break;
   case MT_PROMOTION_QUEEN: MOVE_MAKE_HANDLE_PROMOTION(PR_Q); break;
 #undef MOVE_MAKE_HANDLE_PROMOTION
+
+  case MT_NULL: break;
   }
 
 
@@ -110,20 +106,15 @@ move_make(move *m, game_state *game, irreversable_state *meta)
   board->types[m->to] = piece;
 
   game->active = OTHER_COLOR(game->active);
-
-  return value;
 }
 
 
-int
+void
 move_unmake(move *m, game_state *game)
 {
-  int value;
   board_state *board = &game->board;
   piece_type piece = board->types[m->to],
   capture = m->capture;
-
-  value = eval_piece_value(capture);
 
   bitboard_unset(m->to, &board->bitboards[piece]);
   bitboard_set(m->to, &board->bitboards[capture]);
@@ -141,13 +132,11 @@ move_unmake(move *m, game_state *game)
     {
       bitboard_set(m->to - 8, &board->bitboards[PT_BP]);
       board->types[m->to - 8] = PT_BP;
-      value += eval_piece_value(PT_BP);
     }
     else // piece = PT_BP
     {
       bitboard_set(m->to + 8, &board->bitboards[PT_WP]);
       board->types[m->to + 8] = PT_WP;
-      value += eval_piece_value(PT_WP);
     }
     break;
 
@@ -169,7 +158,6 @@ move_unmake(move *m, game_state *game)
 #define MOVE_UNMAKE_HANDLE_PROMOTION(rel_type) \
     { \
       prepromo_type = piece + (PR_P - rel_type); \
-      value += eval_piece_value(prepromo_type) - eval_piece_value(piece); \
       piece = prepromo_type; \
     }
   case MT_PROMOTION_KNIGHT: MOVE_UNMAKE_HANDLE_PROMOTION(PR_N); break;
@@ -177,12 +165,12 @@ move_unmake(move *m, game_state *game)
   case MT_PROMOTION_ROOK: MOVE_UNMAKE_HANDLE_PROMOTION(PR_R); break;
   case MT_PROMOTION_QUEEN: MOVE_UNMAKE_HANDLE_PROMOTION(PR_Q); break;
 #undef MOVE_UNMAKE_HANDLE_PROMOTION
+
+  case MT_NULL: break;
   }
 
   bitboard_set(m->from, &board->bitboards[piece]);
   board->types[m->from] = piece;
 
   game->active = OTHER_COLOR(game->active);
-
-  return -value;
 }
