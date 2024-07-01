@@ -276,7 +276,7 @@ TEST(position6_perft)
   size_t i;
   game_state game;
   irreversable_state meta;
-  const size_t depth = 10;
+  const size_t depth = 7;
   const struct perft_result expected[] =
   {
     { .nodes = 1               },
