@@ -211,9 +211,16 @@ print_moves(board_state *board, struct move_buffer *mbuf)
   for (i = 0; i < mbuf->size; ++i)
   {
     move m = mbuf->moves[i];
-    printf("[%3zu]:  (%s) %s -> %s (%s)  | %s\n",
-        i, piece_names[board->types[m.from]],
-        square_names[m.from], square_names[m.to],
-        piece_names[m.capture], move_names[m.type]);
+    printf("[%3zu]:  ", i);
+    print_move(board, m);
   }
+}
+
+void
+print_move(board_state *board, move m)
+{
+  printf("(%s) %s -> %s (%s)  | %s\n",
+      piece_names[board->types[m.from]],
+      square_names[m.from], square_names[m.to],
+      piece_names[m.capture], move_names[m.type]);
 }
