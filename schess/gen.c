@@ -371,6 +371,8 @@ move_buffer_create(size_t max_ply)
 {
   return calloc(max_ply, sizeof(struct move_buffer));
 }
+void
+move_buffer_destroy(struct move_buffer *mbuf) { free(mbuf); }
 
 void
 move_gen_init_LUTs(void)

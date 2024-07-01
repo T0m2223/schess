@@ -12,6 +12,8 @@ struct move_buffer
 };
 
 struct move_buffer *move_buffer_create(size_t max_ply);
+void move_buffer_destroy(struct move_buffer *mbuf);
+
 
 void move_gen_init_LUTs(void);
 
