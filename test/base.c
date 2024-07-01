@@ -114,7 +114,7 @@ main(void)
       printf("  => '%s' failed: %d\n", current_test->name, res);
     }
 
-    printf("Test group %s: %zu test run; %zu failed.\n", current_group->name, num_tests, failures);
+    printf("Test group %s: %zu test ran; %zu failed.\n", current_group->name, num_tests, failures);
   }
 
   return EXIT_SUCCESS;
