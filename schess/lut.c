@@ -37,8 +37,7 @@ lut_fill_knight_attacks(bitboard lut[NUM_SQUARES])
   for (sq = a1; sq < NUM_SQUARES; ++sq)
   {
     knight = sq2bb(sq);
-    lut[sq] = 0;
-    lut[sq] |= nonoea(knight);
+    lut[sq]  = nonoea(knight);
     lut[sq] |= noeaea(knight);
     lut[sq] |= soeaea(knight);
     lut[sq] |= sosoea(knight);
@@ -93,8 +92,8 @@ lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], size_t offset[NUM_SQUARES], si
     offset[sq] = current_offset;
 
     // generate mask
-    file = sq & 0x7;
-    rank = sq & 0x38;
+    file = sq & 7;
+    rank = sq >> 3;
     mask[sq]  = file_attack << file;
     mask[sq] |= rank_attack << rank;
     mask[sq] &= ~sq2bb(sq);
@@ -187,8 +186,7 @@ lut_fill_king_attacks(bitboard lut[NUM_SQUARES])
   for (sq = a1; sq < NUM_SQUARES; ++sq)
   {
     king = sq2bb(sq);
-    lut[sq] = 0;
-    lut[sq] |= no(king);
+    lut[sq]  = no(king);
     lut[sq] |= so(king);
     lut[sq] |= ea(king);
     lut[sq] |= we(king);
