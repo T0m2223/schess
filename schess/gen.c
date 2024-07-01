@@ -118,7 +118,7 @@ is_square_checked(bitboard own, bitboard other, bitboard other_pieces[6], bitboa
   attacker |= knight_attacks[sq]      & (other_pieces[PR_N]);
   attacker |= other_pawn_attacks      & sq2bb(sq);
 
-  // Optional for pseudo-legal
+  // Optional for pseudo-legal, obligatory for legal checker
   attacker |= king_attacks[sq]        & (other_pieces[PR_K]);
 
   return attacker != 0;
@@ -397,8 +397,8 @@ is_board_legal(board_state *board, color active)
   switch (active)
   {
   case COLOR_WHITE:
-    return !is_square_checked(bocc, wocc, &board->bitboards[COLOR_BLACK], wpawn_attacks, log_bit(board->bitboards[PT_BK]));
+    return !is_square_checked(bocc, wocc, &board->bitboards[COLOR_WHITE], wpawn_attacks, log_bit(board->bitboards[PT_BK]));
   case COLOR_BLACK:
-    return !is_square_checked(wocc, bocc, &board->bitboards[COLOR_WHITE], bpawn_attacks, log_bit(board->bitboards[PT_WK]));
+    return !is_square_checked(wocc, bocc, &board->bitboards[COLOR_BLACK], bpawn_attacks, log_bit(board->bitboards[PT_WK]));
   }
 }

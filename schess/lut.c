@@ -93,7 +93,7 @@ lut_fill_rook_attacks(bitboard mask[NUM_SQUARES], size_t offset[NUM_SQUARES], si
 
     // generate mask
     file = sq & 7;
-    rank = sq >> 3;
+    rank = (sq >> 3) << 3;
     mask[sq]  = file_attack << file;
     mask[sq] |= rank_attack << rank;
     mask[sq] &= ~sq2bb(sq);
