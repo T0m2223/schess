@@ -136,8 +136,8 @@ generate_king_moves(bitboard own, bitboard other, bitboard other_pieces[6], bitb
   if (is_square_checked(own, other, other_pieces, other_pawn_attacks, sq)) return;
 
   // castling moves
-  bitboard castle_east = sq2bb(sq + 2),
-           castle_west = castle_east >> 4;
+  bitboard castle_east = sq2bb(sq) << 2,
+           castle_west = sq2bb(sq) >> 2;
   if (castle_east & meta.castling_rights &&
       !is_square_checked(own, other, other_pieces, other_pawn_attacks, sq + 1) &&
       !(occ & (sq2bb(sq + 1) | sq2bb(sq + 2))))
