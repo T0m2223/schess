@@ -3,7 +3,6 @@
 
 #include <schess/types.h>
 
-int eval_piece_value(piece_type type);
-
+int eval_position(game_state *game, irreversable_state meta);
 
 #endif // SCHESS_EVAL_H
