@@ -4,7 +4,6 @@
 #include <schess/search.h>
 #include <schess/utils.h>
 #include <stddef.h>
-#include <stdio.h>
 
 int quiesce(game_state *game, irreversable_state meta, int alpha, int beta)
 {
@@ -35,7 +34,7 @@ alpha_beta(game_state *game, irreversable_state meta, int alpha, int beta, unsig
     meta_copy = meta;
 
     mate = move_make(m, game, &meta_copy);
-    if (mate) score = mate;
+    if (mate) score = -mate;
     else score = -alpha_beta(game, meta_copy, -beta, -alpha, depth, mbuf);
     move_unmake(m, game);
 
