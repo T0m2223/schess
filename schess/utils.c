@@ -280,12 +280,12 @@ parse_FEN(const char *FEN, game_state *game_out, irreversable_state *meta_out)
   // optional fields
   do
   {
-    if (*string_ptr   != '\0') break;
+    if (*string_ptr   == '\0') break;
     if (*string_ptr++ != ' ') return 1;
 
     err = parse_halfmove_clock(string_ptr, &meta, &string_ptr);
     if (err) return err;
-    if (*string_ptr   != '\0') break;
+    if (*string_ptr   == '\0') break;
     if (*string_ptr++ != ' ') return 1;
 
     err = parse_fullmove_number(string_ptr, &game, &string_ptr);
