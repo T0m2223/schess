@@ -57,6 +57,7 @@ group_append_test(const char *group, const char *name, int (*fn)(void))
     group_head->tests = NULL;
     group_head->count = 1;
     test_ll_append_test(&group_head->tests, name, fn);
+
     return;
   }
 
@@ -71,13 +72,13 @@ group_append_test(const char *group, const char *name, int (*fn)(void))
     last = current;
   }
 
-  last->next = malloc(sizeof(group_ll));
-  last = current->next;
-  last->name = group;
-  last->next = NULL;
+  last->next  = malloc(sizeof(group_ll));
+  last        = last->next;
+  last->name  = group;
+  last->next  = NULL;
   last->tests = NULL;
   last->count = 1;
-  test_ll_append_test(&group_head->tests, name, fn);
+  test_ll_append_test(&last->tests, name, fn);
 }
 
 void
@@ -101,13 +102,15 @@ main(void)
   {
     ran = num_tests = failures = 0;
     printf("Running tests from %s:\n", current_group->name);
-    for (current_test = current_group->tests; current_test; current_test = current_test->next, ++ran)
+    for (current_test = current_group->tests; current_test; current_test = current_test->next)
     {
       printf("=> Progress: (%zu/%zu)", ran, current_group->count);
       fflush(stdout);
       ++num_tests;
       res = current_test->fn();
       printf("\r");
+
+      ++ran;
       if (!res) continue;
 
       ++failures;

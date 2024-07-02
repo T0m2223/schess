@@ -1,4 +1,4 @@
-#include "schess/utils.h"
+#include <schess/utils.h>
 #include <string.h>
 #include <test/base.h>
 #include <schess/search.h>
@@ -6,29 +6,9 @@
 #include <stddef.h>
 
 
-#define EPD_DEFAULT_DEPTH 8
-
-typedef enum
-{
-  EPD_AM,
-  EPD_BM,
-} epd_opcode;
+#define EPD_DEFAULT_DEPTH 6
 
 static int
-move_test(game_state *game, irreversable_state meta, epd_opcode op, square from, square to, unsigned depth)
-{
-  move best = search_best_move(game, meta, depth);
-
-  switch (op)
-  {
-  case EPD_AM:
-    return !(best.from != from || best.to != to);
-  case EPD_BM:
-    return !(best.from == from && best.to == to);
-  }
-}
-
-int
 epd_test(const char *epd, unsigned depth)
 {
   game_state game;
@@ -38,7 +18,7 @@ epd_test(const char *epd, unsigned depth)
 
   square from, to;
   piece_type promotion;
-  char epd_copy[strlen(epd)];
+  char epd_copy[strlen(epd) + 1];
   int err;
 
   for (i = 0, whitespaces = 0; i < strlen(epd) && whitespaces < 4; ++i)
@@ -59,7 +39,7 @@ epd_test(const char *epd, unsigned depth)
   if (strlen(&epd[i + 1]) < 3)
     return 1;
 
-  err = parse_SAN(&epd[i + 4], &game, meta, &from, &to, &promotion);
+  err = parse_SAN(&epd[i + 3], &game, meta, &from, &to, &promotion);
   if (err) return err;
 
   best = search_best_move(&game, meta, depth);
@@ -85,6 +65,7 @@ epd_test(const char *epd, unsigned depth)
 
   return 1;
 }
+
 
 TEST(bk_test)
 {
@@ -125,3 +106,4 @@ TEST(bk_test)
 
   return 0;
 }
+
