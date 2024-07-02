@@ -38,7 +38,7 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c | $(TEST_OBJ_DIR)
 
 debug: CFLAGS := $(filter-out -O3, $(CFLAGS))
 debug: CFLAGS += -ggdb
-debug: $(BIN)
+debug: $(BIN) $(TEST_BIN)
 
 $(LUT): $(LUT_GEN) | $(LUT_DIR)
 	$(LUT_GEN) $(LUT)
