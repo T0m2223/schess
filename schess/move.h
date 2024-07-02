@@ -3,7 +3,7 @@
 
 #include <schess/types.h>
 
-void
+int
 move_make(move *m, game_state *game, irreversable_state *meta);
 
 void

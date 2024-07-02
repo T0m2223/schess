@@ -8,7 +8,7 @@ static inline void
 bitboard_unset(square sq, bitboard *b) { *b &= ~sq2bb(sq); }
 
 
-void
+int
 move_make(move *m, game_state *game, irreversable_state *meta)
 {
   board_state *board = &game->board;
@@ -106,6 +106,10 @@ move_make(move *m, game_state *game, irreversable_state *meta)
   board->types[m->to] = piece;
 
   game->active = OTHER_COLOR(game->active);
+
+  if (capture == PT_WK) return -oo;
+  if (capture == PT_BK) return +oo;
+  return 0;
 }
 
 

@@ -4,6 +4,7 @@
 #include <schess/search.h>
 #include <schess/utils.h>
 #include <stddef.h>
+#include <stdio.h>
 
 int quiesce(game_state *game, irreversable_state meta, int alpha, int beta)
 {
@@ -24,6 +25,7 @@ alpha_beta(game_state *game, irreversable_state meta, int alpha, int beta, unsig
   size_t i, num_moves;
   int score = 42;
   irreversable_state meta_copy;
+  int mate;
 
   num_moves = generate_moves(game, meta, &mbuf[depth]);
 
@@ -32,8 +34,9 @@ alpha_beta(game_state *game, irreversable_state meta, int alpha, int beta, unsig
     move *m = mbuf[depth].moves + i;
     meta_copy = meta;
 
-    move_make(m, game, &meta_copy);
-    score = -alpha_beta(game, meta_copy, -beta, -alpha, depth, mbuf);
+    mate = move_make(m, game, &meta_copy);
+    if (mate) score = mate;
+    else score = -alpha_beta(game, meta_copy, -beta, -alpha, depth, mbuf);
     move_unmake(m, game);
 
     if (score >= beta) return beta;
@@ -63,7 +66,6 @@ search_best_move(game_state *game, irreversable_state meta, unsigned depth)
     move_make(m, game, &meta_copy);
     score = -alpha_beta(game, meta_copy, -oo, +oo, depth, mbuf);
     move_unmake(m, game);
-
 
     if (score > best_score)
     {
