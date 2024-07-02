@@ -4,7 +4,7 @@
 #include <limits.h>
 #include <stdint.h>
 
-#define oo INT_MAX
+#define oo (INT_MAX / 2)
 
 enum PIECE_REL { PR_P, PR_N, PR_B, PR_R, PR_Q, PR_K };
 typedef enum
