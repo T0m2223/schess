@@ -199,7 +199,7 @@ is_valid_square_name(char file, char rank)
 static square
 square_from_name(char file, char rank)
 {
-  return ((file - 'a') * 8) + (rank - '1');
+  return ((rank - '1') * 8) + (file - 'a');
 }
 static int
 parse_en_passant(const char *en_passant_string, game_state *game_out, const char **string_pos_out)
@@ -357,7 +357,7 @@ piece_from_symbol(const char name)
 int
 parse_SAN(const char *SAN, game_state *game, irreversable_state meta, square *from_out, square *to_out, piece_type *promotion_out)
 {
-  square from, to;
+  square from = 0, to;
   piece_type piece, promotion = PT_NONE;
   size_t len = strlen(SAN), i;
   struct move_buffer *mbuf;
@@ -396,6 +396,8 @@ parse_SAN(const char *SAN, game_state *game, irreversable_state meta, square *fr
           from = to + 16;
         else return 1;
         break;
+      default:
+        return 1;
       }
       break;
     case 4:
@@ -473,6 +475,7 @@ parse_SAN(const char *SAN, game_state *game, irreversable_state meta, square *fr
         to   = square_from_name(SAN[3], SAN[4]);
       }
       else return 1;
+      break;
     case 6: // capture, promotion
       if (SAN[1] != 'x' || SAN[4] != '=' ||
           !is_valid_square_name(SAN[2], SAN[3]) ||
@@ -514,6 +517,26 @@ parse_SAN(const char *SAN, game_state *game, irreversable_state meta, square *fr
         goto parse_SAN_fail_free_mbuf;
 
       to = square_from_name(SAN[1], SAN[2]);
+
+      for (i = 0; i < mbuf->size; ++i)
+      {
+        m = mbuf->moves[i];
+        if (m.to != to ||
+            game->board.types[m.from] != piece ||
+            game->board.types[m.to]   != PT_NONE)
+          continue;
+
+        move_make(&m, game, &meta_dump);
+        if (is_board_legal(&game->board, game->active))
+        {
+          from = m.from;
+          move_unmake(&m, game);
+          break;
+        }
+        move_unmake(&m, game);
+      }
+
+      if (i == mbuf->size) goto parse_SAN_fail_free_mbuf;
       break;
     case 4:
       if (!is_valid_square_name(SAN[2], SAN[3]))
