@@ -400,5 +400,7 @@ is_board_legal(board_state *board, color active)
     return !is_square_checked(bocc, wocc, &board->bitboards[COLOR_WHITE], wpawn_attacks, log_bit(board->bitboards[PT_BK]));
   case COLOR_BLACK:
     return !is_square_checked(wocc, bocc, &board->bitboards[COLOR_BLACK], bpawn_attacks, log_bit(board->bitboards[PT_WK]));
+  default:
+    return 0;
   }
 }
