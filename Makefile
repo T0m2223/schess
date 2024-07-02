@@ -4,7 +4,8 @@ TARGET_DIR := target
 LUT_DIR := $(TARGET_DIR)/LUTs
 TEST_SRC_DIR := test
 TEST_OBJ_DIR := $(OBJ_DIR)/test
-ARGS := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" 7
+DEPTH := 7
+ARGS := FENs/init.fen $(DEPTH)
 
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
